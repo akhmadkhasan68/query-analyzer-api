@@ -1,0 +1,44 @@
+services:
+    postgres:
+        image: postgres:17
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: Rahasia123
+        ports:
+            - 5432:5432
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+
+    redis:
+        image: redis:8.0.1
+        ports:
+            - 6379:6379
+        command: redis-server --save 20 1 --loglevel warning
+        volumes:
+            - redis-data:/data
+
+    mailpit:
+        image: axllent/mailpit:v1.25
+        container_name: mailpit
+        restart: unless-stopped
+        volumes:
+            - mailpit-data:/data
+        ports:
+            - 8025:8025
+            - 1025:1025
+        environment:
+            MP_MAX_MESSAGES: 5000
+            MP_DATABASE: /data/mailpit.db
+            MP_SMTP_AUTH_ACCEPT_ANY: 1
+            MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+    # Use this if need UI to access the database
+    # adminer:
+    #   image: adminer
+    #   ports:
+    #     - 8080:8080
+
+volumes:
+    postgres-data: {}
+    redis-data: {}
+    mailpit-data: {}

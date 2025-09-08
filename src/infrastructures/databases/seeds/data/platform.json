@@ -1,0 +1,12 @@
+[
+    {
+        "framework": "NestJS",
+        "ormProvider": "TypeORM",
+        "databaseProvider": "PostgreSQL"
+    },
+    {
+        "framework": ".NET",
+        "ormProvider": "EF Core",
+        "databaseProvider": "SQL Server"
+    }
+]

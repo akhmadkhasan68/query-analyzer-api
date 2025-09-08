@@ -1,0 +1,26 @@
+{
+    "$schema": "https://json.schemastore.org/nest-cli",
+    "collection": "@nestjs/schematics",
+    "sourceRoot": "src",
+    "compilerOptions": {
+        "deleteOutDir": true,
+        "assets": [
+            {
+                "include": "./infrastructures/modules/mail/templates/**/*",
+                "outDir": "./dist",
+                "watchAssets": true
+            },
+            {
+                "include": "./infrastructures/modules/export-data/templates/**/*",
+                "outDir": "./dist",
+                "watchAssets": true
+            },
+            {
+                "include": "./modules/user/templates/**/*",
+                "outDir": "./dist"
+            }
+        ],
+        "watchAssets": true,
+        "tsConfigPath": "tsconfig.build.json"
+    }
+}
