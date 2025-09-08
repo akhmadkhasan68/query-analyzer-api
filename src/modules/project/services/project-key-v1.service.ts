@@ -34,7 +34,7 @@ export class ProjectKeyV1Service {
         const { plainKey, hashedKey, maskedKey } = await this.generateKeyPair();
 
         const createdProjectKey = this.projectKeyV1Repository.create({
-            name: StringUtil.convertToTitleCase(`Default Key`),
+            name: StringUtil.convertToTitleCase('Default Key'),
             hashedKey: hashedKey,
             maskedKey: maskedKey,
         });

@@ -12,7 +12,7 @@ export class ProjectV1Response {
     keys?: ProjectKeyV1Response[];
 
     static FromEntity(entity: IProject): ProjectV1Response {
-        var response = new ProjectV1Response();
+        const response = new ProjectV1Response();
 
         response.id = entity.id;
         response.name = entity.name;

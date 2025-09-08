@@ -9,7 +9,7 @@ export class ProjectKeyV1Response {
     lastUsedAt: Date | null;
 
     static FromEntity(entity: IProjectKey): ProjectKeyV1Response {
-        var response = new ProjectKeyV1Response();
+        const response = new ProjectKeyV1Response();
 
         response.id = entity.id;
         response.name = entity.name;
