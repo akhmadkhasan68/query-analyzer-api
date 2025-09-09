@@ -15,7 +15,6 @@ import { HealthModule } from './modules/health/health.module';
 import { IamModule } from './modules/iam/iam.module';
 import { JwtAuthGuard } from './modules/iam/shared/guards/jwt-auth.guard';
 import { PermissionGuard } from './modules/iam/shared/guards/permission.guard';
-import { ProjectApiKeyGuard } from './modules/iam/shared/guards/project-api-key.guard';
 import { LogActivityModule } from './modules/log-activity/log-activity.module';
 import { OperationModule } from './modules/operation/operation.module';
 import { PermissionModule } from './modules/permission/permission.module';
@@ -110,10 +109,6 @@ import { DateTimeUtil } from './shared/utils/datetime.util';
         {
             provide: APP_GUARD,
             useClass: PermissionGuard,
-        },
-        {
-            provide: APP_GUARD,
-            useClass: ProjectApiKeyGuard,
         },
         {
             provide: APP_INTERCEPTOR,
