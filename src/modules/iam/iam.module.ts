@@ -9,6 +9,7 @@ import { ImportDataModule } from 'src/infrastructures/modules/import-data/import
 import { MailModule } from 'src/infrastructures/modules/mail/mail.module';
 import { QueueModule } from 'src/infrastructures/modules/queue/queue.module';
 import { PermissionModule } from '../permission/permission.module';
+import { ProjectModule } from '../project/project.module';
 import { RoleModule } from '../role/role.module';
 import { UserModule } from '../user/user.module';
 import { IamAuthV1Controller } from './controllers/iam-auth-v1.controller';
@@ -33,6 +34,7 @@ import { JwtStrategy } from './shared/strategy/jwt.strategy';
         UserModule,
         RoleModule,
         PermissionModule,
+        ProjectModule,
     ],
     controllers: [IamAuthV1Controller, IamForgotPasswordV1Controller],
     providers: [

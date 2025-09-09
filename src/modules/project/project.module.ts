@@ -21,6 +21,6 @@ import { ProjectV1Service } from './services/project-v1.service';
         ProjectV1Repository,
         ProjectKeyV1Repository,
     ],
-    exports: [],
+    exports: [ProjectV1Service, ProjectKeyV1Service],
 })
 export class ProjectModule {}
