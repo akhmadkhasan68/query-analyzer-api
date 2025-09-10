@@ -20,6 +20,7 @@ import { IPaginationResponse } from '../../../shared/interfaces/paginate-respons
 import { ProjectKeyV1Response } from '../dtos/responses/project-key-v1.response';
 import { IBasicResponse } from '../../../shared/interfaces/basic-response.interface';
 import { ProjectKeyCreateV1Request } from '../dtos/requests/project-key-create-v1.request';
+import { ProjectKeyDeleteV1Request } from '../dtos/requests/project-key-delete-v1.request';
 
 @Controller({
     path: 'projects/:projectId/keys',
@@ -79,9 +80,15 @@ export class ProjectKeyV1Controller {
     }
 
     @Permission(RESOURCE.PROJECT_KEY, [OPERATION.DELETE])
-    @Delete(':id')
-    async delete(@Param('id') id: string): Promise<IBasicResponse<void>> {
-        await this.projectKeyV1Service.delete(id);
+    @Delete()
+    async delete(
+        @Param('projectId') projectId: string,
+        @Body() deleteDto: ProjectKeyDeleteV1Request,
+    ): Promise<IBasicResponse<void>> {
+        const { ids } = deleteDto;
+        await this.projectKeyV1Service.findByIds(ids);
+        await this.projectKeyV1Service.delete(ids);
+
         return {
             message: 'Project key deleted successfully',
         };
