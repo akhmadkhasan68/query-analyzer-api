@@ -3,6 +3,7 @@ import {
     Controller,
     Delete,
     Get,
+    NotFoundException,
     Param,
     Post,
     Query,
@@ -20,6 +21,8 @@ import { IPaginationResponse } from '../../../shared/interfaces/paginate-respons
 import { ProjectKeyV1Response } from '../dtos/responses/project-key-v1.response';
 import { IBasicResponse } from '../../../shared/interfaces/basic-response.interface';
 import { ProjectKeyCreateV1Request } from '../dtos/requests/project-key-create-v1.request';
+import { ProjectKeyDeleteV1Request } from '../dtos/requests/project-key-delete-v1.request';
+import { NotFoundError } from 'rxjs';
 
 @Controller({
     path: 'projects/:projectId/keys',
@@ -82,10 +85,10 @@ export class ProjectKeyV1Controller {
     @Delete()
     async delete(
         @Param('projectId') projectId: string,
-        @Body() deleteDto: { ids: [] },
+        @Body() deleteDto: ProjectKeyDeleteV1Request,
     ): Promise<IBasicResponse<void>> {
         const { ids } = deleteDto;
-
+        await this.projectKeyV1Service.findByIds(ids);
         await this.projectKeyV1Service.delete(ids);
 
         return {
