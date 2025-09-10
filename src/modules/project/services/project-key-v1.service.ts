@@ -9,6 +9,7 @@ import { IPaginateData } from '../../../shared/interfaces/paginate-response.inte
 import { ProjectKeyPaginateV1Request } from '../dtos/requests/project-key-paginate-v1.request';
 import { ProjectKeyCreateV1Request } from '../dtos/requests/project-key-create-v1.request';
 import { In } from 'typeorm';
+import { ERROR_MESSAGE_CONSTANT } from '../../../shared/constants/error-message.constant';
 
 @Injectable()
 export class ProjectKeyV1Service {
@@ -122,7 +123,7 @@ export class ProjectKeyV1Service {
         });
 
         if (projectKeys.length !== ids.length) {
-            throw new NotFoundException('Project key not found');
+            throw new NotFoundException(ERROR_MESSAGE_CONSTANT.NotFound);
         }
 
         return projectKeys;

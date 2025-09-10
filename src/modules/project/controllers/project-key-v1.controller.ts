@@ -3,7 +3,6 @@ import {
     Controller,
     Delete,
     Get,
-    NotFoundException,
     Param,
     Post,
     Query,
@@ -22,7 +21,6 @@ import { ProjectKeyV1Response } from '../dtos/responses/project-key-v1.response'
 import { IBasicResponse } from '../../../shared/interfaces/basic-response.interface';
 import { ProjectKeyCreateV1Request } from '../dtos/requests/project-key-create-v1.request';
 import { ProjectKeyDeleteV1Request } from '../dtos/requests/project-key-delete-v1.request';
-import { NotFoundError } from 'rxjs';
 
 @Controller({
     path: 'projects/:projectId/keys',
