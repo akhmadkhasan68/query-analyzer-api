@@ -1,4 +1,4 @@
 export interface IExportDataCsvOptions {
-    headers?: string[]; 
+    headers?: string[];
     delimiter?: string;
 }

@@ -17,7 +17,8 @@ export class StorageFactoryService implements OnModuleInit {
     private storageDriverService: IStorageDriverService;
 
     onModuleInit() {
-        this.storageDriverService = StorageFactoryService.createStorageService();
+        this.storageDriverService =
+            StorageFactoryService.createStorageService();
     }
 
     /**

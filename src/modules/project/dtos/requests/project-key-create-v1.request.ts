@@ -6,7 +6,8 @@ export const ProjectKeyCreateV1Schema = z.object({
         .string({
             required_error: 'Project ID is required',
         })
-        .uuid(),
+        .uuid()
+        .optional(),
     name: z.string().min(2).max(100),
 });
 
