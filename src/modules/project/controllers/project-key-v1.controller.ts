@@ -79,9 +79,15 @@ export class ProjectKeyV1Controller {
     }
 
     @Permission(RESOURCE.PROJECT_KEY, [OPERATION.DELETE])
-    @Delete(':id')
-    async delete(@Param('id') id: string): Promise<IBasicResponse<void>> {
-        await this.projectKeyV1Service.delete(id);
+    @Delete()
+    async delete(
+        @Param('projectId') projectId: string,
+        @Body() deleteDto: { ids: [] },
+    ): Promise<IBasicResponse<void>> {
+        const { ids } = deleteDto;
+
+        await this.projectKeyV1Service.delete(ids);
+
         return {
             message: 'Project key deleted successfully',
         };

@@ -109,7 +109,7 @@ export class ProjectKeyV1Service {
         return this.projectKeyV1Repository.save(createdProjectKey);
     }
 
-    async delete(id: string): Promise<void> {
+    async delete(id: string | string[]): Promise<void> {
         await this.projectKeyV1Repository.delete(id);
     }
 }
