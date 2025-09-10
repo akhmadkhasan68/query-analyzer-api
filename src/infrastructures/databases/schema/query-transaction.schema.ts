@@ -8,6 +8,7 @@ import { IQueryTransaction } from './interfaces/query-transaction.interface';
 
 @Schema({
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
+    collection: 'query_transactions',
 })
 export class QueryTransaction extends BaseSchema implements IQueryTransaction {
     @Prop({

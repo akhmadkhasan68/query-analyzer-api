@@ -3,6 +3,6 @@ import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/p
 
 export const ProjectKey = createParamDecorator(
     async (data, ctx: ExecutionContext): Promise<IProjectKey> => {
-        return ctx.switchToHttp().getRequest().projectKey;
+        return ctx.switchToHttp().getRequest().projectKey as IProjectKey;
     },
 );

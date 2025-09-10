@@ -43,7 +43,7 @@ export class ProjectKeyV1Repository extends Repository<IProjectKey> {
                 project: { id: projectId },
                 hashedKey: Not(IsNull()),
             },
-            relations: ['project'],
+            relations: ['project', 'project.platform'],
         });
 
         for (const projectKey of projectKeys) {
