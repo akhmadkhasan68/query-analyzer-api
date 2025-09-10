@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { IProject } from '../entities/interfaces/project.interface';
 import { BaseSchema } from './base.schema';
 import {
     IQueryTransactionEvent,
@@ -10,6 +11,7 @@ import { QueryTransaction } from './query-transaction.schema';
 
 @Schema({
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
+    collection: 'query_transaction_events',
 })
 export class QueryTransactionEvent
     extends BaseSchema
@@ -18,15 +20,20 @@ export class QueryTransactionEvent
     @Prop({
         type: QueryTransaction,
         ref: QueryTransaction.name,
-        required: true,
+        required: false,
     })
-    transaction: IQueryTransaction;
+    transaction?: IQueryTransaction;
+
+    @Prop({ required: true })
+    queryId: string;
 
     @Prop({ required: true })
     timestamp: Date;
 
-    @Prop({ required: true })
-    projectId: string;
+    @Prop({
+        type: Object,
+    })
+    project: IProject;
 
     @Prop({ required: true })
     rawQuery: string;
@@ -52,8 +59,8 @@ export class QueryTransactionEvent
     @Prop({ required: true })
     environment: string;
 
-    @Prop({ required: true })
-    applicationName: string;
+    @Prop({ required: false })
+    applicationName?: string;
 
     @Prop({ required: false })
     version?: string;

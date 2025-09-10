@@ -3,22 +3,23 @@ import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/p
 export class ProjectKeyV1Response {
     id: string;
     name: string;
-    hashedKey: string;
     maskedKey: string;
     plainKey?: string;
-    lastUsedAt: Date | null;
+    lastUsedAt?: Date;
 
     static FromEntity(entity: IProjectKey): ProjectKeyV1Response {
         const response = new ProjectKeyV1Response();
 
         response.id = entity.id;
         response.name = entity.name;
-        response.hashedKey = entity.hashedKey;
         response.maskedKey = entity.maskedKey;
-        response.lastUsedAt = entity.lastUsedAt || null;
 
         if ((entity as any).plainKey) {
             response.plainKey = (entity as any).plainKey;
+        }
+
+        if (entity.lastUsedAt) {
+            response.lastUsedAt = entity.lastUsedAt;
         }
 
         return response;

@@ -1,9 +1,11 @@
+import { IProject } from '../../entities/interfaces/project.interface';
 import { IBaseSchema } from './base-schema.interface';
 import { IQueryTransaction } from './query-transaction.interface';
 
 export interface IQueryTransactionEvent extends IBaseSchema {
-    projectId: string;
-    transaction: IQueryTransaction;
+    project: IProject;
+    transaction?: IQueryTransaction;
+    queryId: string;
     rawQuery: string;
     parameters: Record<string, any>;
     executionTimeMs: number;
@@ -12,7 +14,7 @@ export interface IQueryTransactionEvent extends IBaseSchema {
     receivedAt: Date;
     contextType?: string;
     environment: string;
-    applicationName: string;
+    applicationName?: string;
     version?: string;
     sourceApiKey: string;
     severity: string;
@@ -21,10 +23,12 @@ export interface IQueryTransactionEvent extends IBaseSchema {
 
 export interface IQueryTransactionEventExecutionPlan {
     databaseProvider: string;
-    planFormat: {
-        contentType: string;
-        fileExtension: string;
-        description: string;
-    };
+    planFormat: IQueryTransactionEventExecutionPlanFormat;
     content: string;
+}
+
+export interface IQueryTransactionEventExecutionPlanFormat {
+    contentType: string;
+    fileExtension: string;
+    description: string;
 }
