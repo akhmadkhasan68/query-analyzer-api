@@ -5,6 +5,9 @@ import { HashUtil } from 'src/shared/utils/hash.util';
 import { StringUtil } from 'src/shared/utils/string.util';
 import { ProjectKeyV1Repository } from '../repositories/project-key-v1.repository';
 import { ProjectV1Repository } from '../repositories/project-v1.repository';
+import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
+import { ProjectKeyPaginateV1Request } from '../dtos/requests/project-key-paginate-v1.request';
+import { ProjectKeyCreateV1Request } from '../dtos/requests/project-key-create-v1.request';
 
 @Injectable()
 export class ProjectKeyV1Service {
@@ -76,5 +79,37 @@ export class ProjectKeyV1Service {
         }
 
         return StringUtil.maskedString(plainKey, 4, 4);
+    }
+
+    async paginate(
+        projectId: string,
+        paginationDto: ProjectKeyPaginateV1Request,
+    ): Promise<IPaginateData<IProjectKey>> {
+        return await this.projectKeyV1Repository.paginate(
+            projectId,
+            paginationDto,
+        );
+    }
+
+    async create(dto: ProjectKeyCreateV1Request): Promise<IProjectKey> {
+        const { plainKey, hashedKey, maskedKey } = await this.generateKeyPair();
+        const project = await this.projectV1Repository.findOneByOrFail({
+            id: dto.projectId,
+        });
+
+        const createdProjectKey = this.projectKeyV1Repository.create({
+            name: dto.name,
+            hashedKey: hashedKey,
+            maskedKey: maskedKey,
+            project: project,
+        });
+
+        (createdProjectKey as any).plainKey = plainKey;
+
+        return this.projectKeyV1Repository.save(createdProjectKey);
+    }
+
+    async delete(id: string): Promise<void> {
+        await this.projectKeyV1Repository.delete(id);
     }
 }

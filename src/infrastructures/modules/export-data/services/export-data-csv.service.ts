@@ -1,7 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import {
-    IExportDataCsvService,
-} from '../interfaces/export-data-service.interface';
+import { IExportDataCsvService } from '../interfaces/export-data-service.interface';
 import { IExportDataCsvOptions } from '../interfaces/options/export-data-csv-options.interface';
 
 /**

@@ -3,9 +3,7 @@ import * as handlebars from 'handlebars';
 import * as path from 'path';
 import { finished } from 'stream/promises';
 import * as wkhtmltopdf from 'wkhtmltopdf';
-import {
-    IExportDataPdfService,
-} from '../interfaces/export-data-service.interface';
+import { IExportDataPdfService } from '../interfaces/export-data-service.interface';
 import { IExportDataPdfOptions } from '../interfaces/options/export-data-pdf-options.interface';
 
 /**

@@ -1,5 +1,3 @@
- 
-
 /**
  * Paginate Util
  * Used to paginate the data

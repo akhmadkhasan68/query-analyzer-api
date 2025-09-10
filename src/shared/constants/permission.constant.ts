@@ -15,6 +15,7 @@ export const RESOURCE = {
     PERMISSION: 'permission',
     LOG_ACTIVITY: 'log-activity',
     PROJECT: 'project',
+    PROJECT_KEY: 'project-key',
 };
 
 export type TResource = (typeof RESOURCE)[keyof typeof RESOURCE];
@@ -49,6 +50,12 @@ export const PERMISSION_RESOURCE_OPERATION: Record<TResource, TOperation[]> = {
         OPERATION.VIEW,
         OPERATION.CREATE,
         OPERATION.UPDATE,
+        OPERATION.DELETE,
+    ],
+
+    [RESOURCE.PROJECT_KEY]: [
+        OPERATION.VIEW,
+        OPERATION.CREATE,
         OPERATION.DELETE,
     ],
 } as const;

@@ -4,6 +4,11 @@ import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/p
 import { ProjectKey } from 'src/infrastructures/databases/entities/project-key.entity';
 import { HashUtil } from 'src/shared/utils/hash.util';
 import { IsNull, Not, QueryRunner, Repository } from 'typeorm';
+import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
+import { QueryFilterUtil } from '../../../shared/utils/query-filter.util';
+import { QuerySortingUtil } from '../../../shared/utils/query-sort.util';
+import { PaginationUtil } from '../../../shared/utils/pagination.util';
+import { ProjectKeyPaginateV1Request } from '../dtos/requests/project-key-paginate-v1.request';
 
 @Injectable()
 export class ProjectKeyV1Repository extends Repository<IProjectKey> {
@@ -52,5 +57,57 @@ export class ProjectKeyV1Repository extends Repository<IProjectKey> {
         }
 
         return null;
+    }
+
+    async paginate(
+        projectId: string,
+        request: ProjectKeyPaginateV1Request,
+    ): Promise<IPaginateData<IProjectKey>> {
+        const alias = this.metadata.name;
+        const ALLOWED_SORTS = new Map<string, string>([
+            ['name', `${alias}.name`],
+            ['updated_at', `${alias}.updatedAt`],
+            ['created_at', `${alias}.createdAt`],
+        ]);
+
+        const query = this.createQueryBuilder(alias).leftJoinAndSelect(
+            `${alias}.project`,
+            'project',
+        );
+
+        // Validate the sort value in the request
+        QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
+
+        QueryFilterUtil.applyFilters(query, {
+            search: request.search
+                ? {
+                      term: request.search,
+                      fields: [{ name: `${alias}.name`, type: 'string' }],
+                  }
+                : null,
+        });
+
+        // Handle sort
+        QuerySortingUtil.applySorting(query, {
+            sort: request.sort,
+            order: request.order,
+            allowedSorts: ALLOWED_SORTS,
+        });
+
+        // Handle pagination
+        query.take(request.perPage);
+        query.skip(PaginationUtil.countOffset(request));
+        query.where({
+            project: { id: projectId },
+        });
+
+        const [items, count] = await query.getManyAndCount();
+
+        const meta = PaginationUtil.mapMeta(count, request);
+
+        return {
+            meta,
+            items,
+        };
     }
 }
