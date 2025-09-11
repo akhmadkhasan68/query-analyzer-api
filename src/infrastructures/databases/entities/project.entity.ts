@@ -23,6 +23,12 @@ export class Project extends BaseEntity implements IProject {
     @ManyToOne(() => Platform)
     platform?: IPlatform;
 
+    @Column({
+        nullable: true,
+        type: 'bigint',
+    })
+    gitlabProjectId?: number;
+
     @OneToMany(() => ProjectKey, (projectKey) => projectKey.project)
     projectKeys?: IProjectKey[];
 }

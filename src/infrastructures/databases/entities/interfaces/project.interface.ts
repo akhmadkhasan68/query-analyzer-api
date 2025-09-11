@@ -8,6 +8,7 @@ export interface IProject extends IBaseEntity {
     description?: string;
     status: ProjectStatusEnum;
     platform?: IPlatform;
+    gitlabProjectId?: number;
 
     projectKeys?: IProjectKey[];
 }

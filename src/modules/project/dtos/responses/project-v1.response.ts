@@ -7,6 +7,7 @@ export class ProjectV1Response {
     name: string;
     description: string | null;
     status: string;
+    gitlabProjectId: number | null;
 
     platform?: PlatformV1Response;
     keys?: ProjectKeyV1Response[];
@@ -18,6 +19,7 @@ export class ProjectV1Response {
         response.name = entity.name;
         response.description = entity.description || null;
         response.status = entity.status.toString();
+        response.gitlabProjectId = entity.gitlabProjectId || null;
 
         if (entity.platform) {
             response.platform = PlatformV1Response.FromEntity(entity.platform);
