@@ -4,8 +4,8 @@ import { IRole } from 'src/infrastructures/databases/entities/interfaces/role.in
 import { Role } from 'src/infrastructures/databases/entities/role.entity';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { PaginationUtil } from 'src/shared/utils/pagination.util';
-import { QueryFilterUtil } from 'src/shared/utils/query-filter.util';
-import { QuerySortingUtil } from 'src/shared/utils/query-sort.util';
+import { TypeORMQueryFilterUtil } from 'src/shared/utils/typeorm-query-filter.util';
+import { TypeORMQuerySortingUtil } from 'src/shared/utils/typeorm-query-sort.util';
 import { Repository } from 'typeorm';
 import { RolePaginateV1Request } from '../dtos/requests/role-paginate-v1.request';
 
@@ -40,9 +40,9 @@ export class RoleV1Repository extends Repository<IRole> {
         ).leftJoinAndSelect(`${alias}.permissions`, 'permissions');
 
         // Validate the sort value in the request
-        QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
+        TypeORMQueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
 
-        QueryFilterUtil.applyFilters(query, {
+        TypeORMQueryFilterUtil.applyFilters(query, {
             search: request.search
                 ? {
                       term: request.search,
@@ -61,7 +61,7 @@ export class RoleV1Repository extends Repository<IRole> {
         });
 
         // Handle sort
-        QuerySortingUtil.applySorting(query, {
+        TypeORMQuerySortingUtil.applySorting(query, {
             sort: request.sort,
             order: request.order,
             allowedSorts: ALLOWED_SORTS,

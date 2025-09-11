@@ -10,7 +10,7 @@ export interface ISortOption {
     allowedSorts: Map<string, string>;
 }
 
-export class QuerySortingUtil {
+export class TypeORMQuerySortingUtil {
     static applySorting<T extends ObjectLiteral>(
         query: SelectQueryBuilder<T>,
         options: ISortOption,

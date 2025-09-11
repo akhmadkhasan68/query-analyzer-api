@@ -6,6 +6,8 @@ export const ERROR_MESSAGE_CONSTANT = {
     Unauthorized: 'Not Authorized',
     ForbiddenAccess: 'Forbidden Access',
     NotFound: 'Not Found',
+    DataIdsNotFound: (ids: string[]) =>
+        `Data with ids [${ids.join(', ')}] not found`,
     InternalServerError: 'Internal Server Error',
     BadRequest: 'Bad Request',
     Conflict: 'Conflict',

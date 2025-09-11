@@ -5,9 +5,9 @@ import { ProjectKey } from 'src/infrastructures/databases/entities/project-key.e
 import { HashUtil } from 'src/shared/utils/hash.util';
 import { IsNull, Not, QueryRunner, Repository } from 'typeorm';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
-import { QueryFilterUtil } from '../../../shared/utils/query-filter.util';
-import { QuerySortingUtil } from '../../../shared/utils/query-sort.util';
 import { PaginationUtil } from '../../../shared/utils/pagination.util';
+import { TypeORMQueryFilterUtil } from '../../../shared/utils/typeorm-query-filter.util';
+import { TypeORMQuerySortingUtil } from '../../../shared/utils/typeorm-query-sort.util';
 import { ProjectKeyPaginateV1Request } from '../dtos/requests/project-key-paginate-v1.request';
 
 @Injectable()
@@ -43,7 +43,6 @@ export class ProjectKeyV1Repository extends Repository<IProjectKey> {
                 project: { id: projectId },
                 hashedKey: Not(IsNull()),
             },
-            relations: ['project', 'project.platform'],
         });
 
         for (const projectKey of projectKeys) {
@@ -76,9 +75,9 @@ export class ProjectKeyV1Repository extends Repository<IProjectKey> {
         );
 
         // Validate the sort value in the request
-        QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
+        TypeORMQueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
 
-        QueryFilterUtil.applyFilters(query, {
+        TypeORMQueryFilterUtil.applyFilters(query, {
             search: request.search
                 ? {
                       term: request.search,
@@ -88,7 +87,7 @@ export class ProjectKeyV1Repository extends Repository<IProjectKey> {
         });
 
         // Handle sort
-        QuerySortingUtil.applySorting(query, {
+        TypeORMQuerySortingUtil.applySorting(query, {
             sort: request.sort,
             order: request.order,
             allowedSorts: ALLOWED_SORTS,

@@ -4,8 +4,8 @@ import { IResource } from 'src/infrastructures/databases/entities/interfaces/res
 import { Resource } from 'src/infrastructures/databases/entities/resource.entity';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { PaginationUtil } from 'src/shared/utils/pagination.util';
-import { QueryFilterUtil } from 'src/shared/utils/query-filter.util';
-import { QuerySortingUtil } from 'src/shared/utils/query-sort.util';
+import { TypeORMQueryFilterUtil } from 'src/shared/utils/typeorm-query-filter.util';
+import { TypeORMQuerySortingUtil } from 'src/shared/utils/typeorm-query-sort.util';
 import { Repository } from 'typeorm';
 import { ResourcePaginateV1Request } from '../dtos/requests/resource-paginate-v1.request';
 
@@ -33,9 +33,9 @@ export class ResourceV1Repository extends Repository<IResource> {
 
         const query = this.createQueryBuilder(this.metadata.name);
 
-        QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
+        TypeORMQueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
 
-        QueryFilterUtil.applyFilters(query, {
+        TypeORMQueryFilterUtil.applyFilters(query, {
             search: request.search
                 ? {
                       term: request.search,
@@ -54,7 +54,7 @@ export class ResourceV1Repository extends Repository<IResource> {
             ],
         });
 
-        QuerySortingUtil.applySorting(query, {
+        TypeORMQuerySortingUtil.applySorting(query, {
             sort: request.sort,
             order: request.order,
             allowedSorts: ALLOWED_SORTS,

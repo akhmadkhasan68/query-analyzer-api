@@ -64,7 +64,8 @@
                     "PascalCase",
                     "snake_case",
                     "UPPER_CASE"
-                ]
+                ],
+                "leadingUnderscore": "allow"
             }
         ],
         "no-console": 1

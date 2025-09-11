@@ -4,8 +4,8 @@ import { IProject } from 'src/infrastructures/databases/entities/interfaces/proj
 import { Project } from 'src/infrastructures/databases/entities/project.entity';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { PaginationUtil } from 'src/shared/utils/pagination.util';
-import { QueryFilterUtil } from 'src/shared/utils/query-filter.util';
-import { QuerySortingUtil } from 'src/shared/utils/query-sort.util';
+import { TypeORMQueryFilterUtil } from 'src/shared/utils/typeorm-query-filter.util';
+import { TypeORMQuerySortingUtil } from 'src/shared/utils/typeorm-query-sort.util';
 import { FindManyOptions, Not, QueryRunner, Repository } from 'typeorm';
 import { ProjectPaginateV1Request } from '../dtos/requests/project-paginate-v1.request';
 
@@ -37,9 +37,9 @@ export class ProjectV1Repository extends Repository<IProject> {
         );
 
         // Validate the sort value in the request
-        QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
+        TypeORMQueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
 
-        QueryFilterUtil.applyFilters(query, {
+        TypeORMQueryFilterUtil.applyFilters(query, {
             search: request.search
                 ? {
                       term: request.search,
@@ -55,7 +55,7 @@ export class ProjectV1Repository extends Repository<IProject> {
         });
 
         // Handle sort
-        QuerySortingUtil.applySorting(query, {
+        TypeORMQuerySortingUtil.applySorting(query, {
             sort: request.sort,
             order: request.order,
             allowedSorts: ALLOWED_SORTS,
@@ -84,6 +84,16 @@ export class ProjectV1Repository extends Repository<IProject> {
         relations?: string[],
     ): Promise<IProject | null> {
         return this.repo.findOne({
+            where: { id },
+            relations: relations ?? this.defaultRelations,
+        });
+    }
+
+    async findOneByIdWithRelationsOrFail(
+        id: string,
+        relations?: string[],
+    ): Promise<IProject> {
+        return this.repo.findOneOrFail({
             where: { id },
             relations: relations ?? this.defaultRelations,
         });

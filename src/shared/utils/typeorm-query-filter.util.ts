@@ -16,7 +16,7 @@ export interface IFilterOption {
     operator?: 'eq' | 'in' | 'like' | 'gt' | 'lt' | 'gte' | 'lte' | 'eqLower';
 }
 
-export class QueryFilterUtil {
+export class TypeORMQueryFilterUtil {
     static applyFilters<T extends ObjectLiteral>(
         query: SelectQueryBuilder<T>,
         options: {

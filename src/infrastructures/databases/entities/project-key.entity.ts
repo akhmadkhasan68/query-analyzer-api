@@ -9,6 +9,9 @@ import { Project } from './project.entity';
 })
 export class ProjectKey extends BaseEntity implements IProjectKey {
     @Column()
+    projectId: string;
+
+    @Column()
     name: string;
 
     @Column()

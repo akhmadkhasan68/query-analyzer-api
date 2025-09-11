@@ -5,8 +5,8 @@ import { Permission } from 'src/infrastructures/databases/entities/permission.en
 import { RolePermissionPaginateV1Request } from 'src/modules/role/dtos/requests/role-permission-paginate-v1.request';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { PaginationUtil } from 'src/shared/utils/pagination.util';
-import { QueryFilterUtil } from 'src/shared/utils/query-filter.util';
-import { QuerySortingUtil } from 'src/shared/utils/query-sort.util';
+import { TypeORMQueryFilterUtil } from 'src/shared/utils/typeorm-query-filter.util';
+import { TypeORMQuerySortingUtil } from 'src/shared/utils/typeorm-query-sort.util';
 import { Repository } from 'typeorm';
 import { PermissionPaginateV1Request } from '../dtos/requests/permission-paginate-v1.request';
 
@@ -38,9 +38,9 @@ export class PermissionV1Repository extends Repository<IPermission> {
             .leftJoinAndSelect(`${alias}.operation`, 'operation');
 
         // Validate the sort value in the request
-        QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
+        TypeORMQueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
 
-        QueryFilterUtil.applyFilters(query, {
+        TypeORMQueryFilterUtil.applyFilters(query, {
             search: request.search
                 ? {
                       term: request.search,
@@ -59,7 +59,7 @@ export class PermissionV1Repository extends Repository<IPermission> {
         });
 
         // Handle sort
-        QuerySortingUtil.applySorting(query, {
+        TypeORMQuerySortingUtil.applySorting(query, {
             sort: request.sort,
             order: request.order,
             allowedSorts: ALLOWED_SORTS,
@@ -96,9 +96,9 @@ export class PermissionV1Repository extends Repository<IPermission> {
             .where('role.id = :roleId', { roleId });
 
         // Validate the sort value in the request
-        QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
+        TypeORMQueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);
 
-        QueryFilterUtil.applyFilters(query, {
+        TypeORMQueryFilterUtil.applyFilters(query, {
             search: request.search
                 ? {
                       term: request.search,
@@ -111,7 +111,7 @@ export class PermissionV1Repository extends Repository<IPermission> {
         });
 
         // Handle sort
-        QuerySortingUtil.applySorting(query, {
+        TypeORMQuerySortingUtil.applySorting(query, {
             sort: request.sort,
             order: request.order,
             allowedSorts: ALLOWED_SORTS,

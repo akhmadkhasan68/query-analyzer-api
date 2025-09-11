@@ -3,13 +3,13 @@ import * as crypto from 'crypto';
 import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/project-key.interface';
 import { HashUtil } from 'src/shared/utils/hash.util';
 import { StringUtil } from 'src/shared/utils/string.util';
-import { ProjectKeyV1Repository } from '../repositories/project-key-v1.repository';
-import { ProjectV1Repository } from '../repositories/project-v1.repository';
-import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
-import { ProjectKeyPaginateV1Request } from '../dtos/requests/project-key-paginate-v1.request';
-import { ProjectKeyCreateV1Request } from '../dtos/requests/project-key-create-v1.request';
 import { In } from 'typeorm';
 import { ERROR_MESSAGE_CONSTANT } from '../../../shared/constants/error-message.constant';
+import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
+import { ProjectKeyCreateV1Request } from '../dtos/requests/project-key-create-v1.request';
+import { ProjectKeyPaginateV1Request } from '../dtos/requests/project-key-paginate-v1.request';
+import { ProjectKeyV1Repository } from '../repositories/project-key-v1.repository';
+import { ProjectV1Repository } from '../repositories/project-v1.repository';
 
 @Injectable()
 export class ProjectKeyV1Service {
@@ -119,7 +119,7 @@ export class ProjectKeyV1Service {
         const projectKeys = await this.projectKeyV1Repository.find({
             where: {
                 id: In(ids),
-            }
+            },
         });
 
         if (projectKeys.length !== ids.length) {

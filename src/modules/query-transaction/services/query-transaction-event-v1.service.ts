@@ -5,7 +5,10 @@ import {
     IQueryTransactionEvent,
     IQueryTransactionEventExecutionPlanFormat,
 } from 'src/infrastructures/databases/schema/interfaces/query-transaction-event.interface';
+import { ProjectV1Repository } from 'src/modules/project/repositories/project-v1.repository';
+import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { QueryTransactionEventCaptureV1Request } from '../dtos/requests/query-transaction-event-capture-v1.request';
+import { QueryTransactionEventPaginationV1Request } from '../dtos/requests/query-transaction-event-paginate-v1.request';
 import { QueryTransactionEventV1Repository } from '../repositories/query-transaction-event-v1.repository';
 import { QueryTransactionSeverityEnum } from '../shared/enums/query-transaction-severity.enum';
 
@@ -13,25 +16,40 @@ import { QueryTransactionSeverityEnum } from '../shared/enums/query-transaction-
 export class QueryTransactionEventV1Service {
     constructor(
         private readonly queryTransactionEventRepository: QueryTransactionEventV1Repository,
+        private readonly projectRepository: ProjectV1Repository,
     ) {}
+
+    async paginate(
+        paginationDto: QueryTransactionEventPaginationV1Request,
+    ): Promise<IPaginateData<IQueryTransactionEvent>> {
+        return await this.queryTransactionEventRepository.paginate(
+            paginationDto,
+        );
+    }
 
     async captureEvent(
         projectKey: IProjectKey,
         request: QueryTransactionEventCaptureV1Request,
     ): Promise<void> {
-        const { project } = projectKey;
+        const { projectId } = projectKey;
 
-        if (!project) {
+        if (!projectId) {
             throw new UnprocessableEntityException(
                 'Project not found for the provided project key.',
             );
         }
 
+        const projectData =
+            await this.projectRepository.findOneByIdWithRelationsOrFail(
+                projectId,
+                ['platform'],
+            );
+
         // Create Data Query Transaction Event
         const severity = this.determineSeverity(request.executionTimeMs);
         const eventData: IQueryTransactionEvent = {
             id: randomUUID(),
-            project: project,
+            project: projectData,
             queryId: request.queryId,
             rawQuery: request.rawQuery,
             parameters: request.parameters || {},

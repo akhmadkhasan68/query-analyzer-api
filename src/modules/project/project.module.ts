@@ -3,12 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectKey } from 'src/infrastructures/databases/entities/project-key.entity';
 import { Project } from 'src/infrastructures/databases/entities/project.entity';
 import { PlatformModule } from '../platform/platform.module';
+import { ProjectKeyV1Controller } from './controllers/project-key-v1.controller';
 import { ProjectV1Controller } from './controllers/project-v1.controller';
 import { ProjectKeyV1Repository } from './repositories/project-key-v1.repository';
 import { ProjectV1Repository } from './repositories/project-v1.repository';
 import { ProjectKeyV1Service } from './services/project-key-v1.service';
 import { ProjectV1Service } from './services/project-v1.service';
-import { ProjectKeyV1Controller } from './controllers/project-key-v1.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Project, ProjectKey]), PlatformModule],
@@ -22,6 +22,12 @@ import { ProjectKeyV1Controller } from './controllers/project-key-v1.controller'
         ProjectV1Repository,
         ProjectKeyV1Repository,
     ],
-    exports: [ProjectV1Service, ProjectKeyV1Service],
+    exports: [
+        ProjectV1Service,
+        ProjectKeyV1Service,
+
+        ProjectV1Repository,
+        ProjectKeyV1Repository,
+    ],
 })
 export class ProjectModule {}
