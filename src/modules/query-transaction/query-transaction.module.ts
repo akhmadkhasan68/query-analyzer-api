@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
     QueryTransactionEvent,
@@ -8,6 +8,7 @@ import {
     QueryTransaction,
     QueryTransactionSchema,
 } from 'src/infrastructures/databases/schema/query-transaction.schema';
+import { QueueModule } from 'src/infrastructures/modules/queue/queue.module';
 import { ProjectModule } from '../project/project.module';
 import { QueryTransactionEventV1Controller } from './controllers/query-transaction-event-v1.controller';
 import { QueryTransactionV1Controller } from './controllers/query-transaction-v1.controller';
@@ -28,6 +29,7 @@ import { QueryTransactionV1Service } from './services/query-transaction-v1.servi
                 schema: QueryTransactionEventSchema,
             },
         ]),
+        forwardRef(() => QueueModule),
         ProjectModule,
     ],
     controllers: [
@@ -43,6 +45,6 @@ import { QueryTransactionV1Service } from './services/query-transaction-v1.servi
         QueryTransactionV1Repository,
         QueryTransactionEventV1Repository,
     ],
-    exports: [],
+    exports: [QueryTransactionV1Service, QueryTransactionEventV1Service],
 })
 export class QueryTransactionModule {}
