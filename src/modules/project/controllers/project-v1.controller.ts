@@ -1,11 +1,24 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Put,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Permission } from 'src/modules/iam/shared/decorators/permission.decorator';
 import { JwtAuthTypeEnum } from 'src/modules/iam/shared/enums/token-type.enum';
 import { OPERATION, RESOURCE } from 'src/shared/constants/permission.constant';
 import { IBasicResponse } from 'src/shared/interfaces/basic-response.interface';
 import { IPaginationResponse } from 'src/shared/interfaces/paginate-response.interface';
-import { ProjectCreateV1Request } from '../dtos/requests/project-create-v1.request';
+import {
+    ProjectCreateV1Request,
+    ProjectDeleteByIdsV1Request,
+    ProjectUpdateV1Request,
+} from '../dtos/requests/project-create-v1.request';
 import { ProjectPaginateV1Request } from '../dtos/requests/project-paginate-v1.request';
 import { ProjectV1Response } from '../dtos/responses/project-v1.response';
 import { ProjectV1Service } from '../services/project-v1.service';
@@ -58,6 +71,46 @@ export class ProjectV1Controller {
         return {
             data: ProjectV1Response.FromEntity(result),
             message: 'Project created successfully',
+        };
+    }
+
+    @Permission(RESOURCE.PROJECT, [OPERATION.UPDATE])
+    @Put(':id')
+    async update(
+        @Param('id') id: string,
+        @Body() updateDto: ProjectUpdateV1Request,
+    ): Promise<IBasicResponse<ProjectV1Response>> {
+        const result = await this.projectV1Service.update(id, updateDto);
+
+        return {
+            message: 'Project updated successfully',
+        };
+    }
+
+    @Permission(RESOURCE.PROJECT, [OPERATION.VIEW])
+    @Get(':id')
+    async detail(
+        @Param('id') id: string,
+    ): Promise<IBasicResponse<ProjectV1Response>> {
+        const result = await this.projectV1Service.detail(id);
+
+        return {
+            data: ProjectV1Response.FromEntity(result),
+            message: 'Project detail retrieved successfully',
+        };
+    }
+
+    @Permission(RESOURCE.PROJECT, [OPERATION.DELETE])
+    @Delete()
+    async deleteByIds(
+        @Body() deleteByIdsDto: ProjectDeleteByIdsV1Request,
+    ): Promise<IBasicResponse<ProjectV1Response>> {
+        const result = await this.projectV1Service.deleteByIds(
+            deleteByIdsDto.ids,
+        );
+
+        return {
+            message: 'Projects detail deleted successfully',
         };
     }
 }

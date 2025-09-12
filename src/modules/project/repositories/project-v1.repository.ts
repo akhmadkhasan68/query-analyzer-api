@@ -6,7 +6,7 @@ import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface
 import { PaginationUtil } from 'src/shared/utils/pagination.util';
 import { TypeORMQueryFilterUtil } from 'src/shared/utils/typeorm-query-filter.util';
 import { TypeORMQuerySortingUtil } from 'src/shared/utils/typeorm-query-sort.util';
-import { FindManyOptions, Not, QueryRunner, Repository } from 'typeorm';
+import { FindManyOptions, In, Not, QueryRunner, Repository } from 'typeorm';
 import { ProjectPaginateV1Request } from '../dtos/requests/project-paginate-v1.request';
 
 @Injectable()
@@ -127,5 +127,18 @@ export class ProjectV1Repository extends Repository<IProject> {
         entity: IProject,
     ): Promise<IProject> {
         return queryRunner.manager.getRepository(this.repo.target).save(entity);
+    }
+
+    async updateById(id: string, entity: IProject): Promise<void> {
+        await this.repo.update(id, entity);
+    }
+
+    async deleteByIdsWithTransaction(
+        queryRunner: QueryRunner,
+        ids: string[],
+    ): Promise<void> {
+        await queryRunner.manager.getRepository(this.repo.target).delete({
+            id: In(ids),
+        });
     }
 }

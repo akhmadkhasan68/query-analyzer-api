@@ -16,6 +16,20 @@ export const ProjectCreateV1Schema = z.object({
         .uuid(),
 });
 
+export const ProjectDeleteByIdsV1Schema = z.object({
+    ids: z.array(z.string()),
+});
+
+export const ProjectUpdateV1Schema = ProjectCreateV1Schema;
+
 export class ProjectCreateV1Request extends ZodUtils.createCamelCaseDto(
     ProjectCreateV1Schema,
+) {}
+
+export class ProjectUpdateV1Request extends ZodUtils.createCamelCaseDto(
+    ProjectUpdateV1Schema,
+) {}
+
+export class ProjectDeleteByIdsV1Request extends ZodUtils.createCamelCaseDto(
+    ProjectDeleteByIdsV1Schema,
 ) {}

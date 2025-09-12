@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/project-key.interface';
 import { ProjectKey } from 'src/infrastructures/databases/entities/project-key.entity';
 import { HashUtil } from 'src/shared/utils/hash.util';
-import { IsNull, Not, QueryRunner, Repository } from 'typeorm';
+import { In, IsNull, Not, QueryRunner, Repository } from 'typeorm';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
 import { PaginationUtil } from '../../../shared/utils/pagination.util';
 import { TypeORMQueryFilterUtil } from '../../../shared/utils/typeorm-query-filter.util';
@@ -108,5 +108,14 @@ export class ProjectKeyV1Repository extends Repository<IProjectKey> {
             meta,
             items,
         };
+    }
+
+    async deleteByProjectIdsWithTransaction(
+        queryRunner: QueryRunner,
+        projectIds: string[],
+    ): Promise<void> {
+        await queryRunner.manager.getRepository(this.repo.target).delete({
+            projectId: In(projectIds),
+        });
     }
 }

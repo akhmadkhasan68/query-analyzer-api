@@ -1,10 +1,18 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    UnprocessableEntityException,
+} from '@nestjs/common';
 import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/project-key.interface';
 import { IProject } from 'src/infrastructures/databases/entities/interfaces/project.interface';
 import { PlatformV1Repository } from 'src/modules/platform/repositories/platform-v1.repository';
+import { ERROR_MESSAGE_CONSTANT } from 'src/shared/constants/error-message.constant';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { DataSource } from 'typeorm';
-import { ProjectCreateV1Request } from '../dtos/requests/project-create-v1.request';
+import {
+    ProjectCreateV1Request,
+    ProjectUpdateV1Request,
+} from '../dtos/requests/project-create-v1.request';
 import { ProjectPaginateV1Request } from '../dtos/requests/project-paginate-v1.request';
 import { ProjectKeyV1Repository } from '../repositories/project-key-v1.repository';
 import { ProjectV1Repository } from '../repositories/project-v1.repository';
@@ -104,5 +112,70 @@ export class ProjectV1Service {
         paginationDto: ProjectPaginateV1Request,
     ): Promise<IPaginateData<IProject>> {
         return await this.projectV1Repository.paginate(paginationDto);
+    }
+
+    async update(id: string, dto: ProjectUpdateV1Request): Promise<void> {
+        await this.validateProjectName(dto.name);
+
+        const platform = await this.validateAndGetPlatform(dto.platformId);
+
+        const project = await this.projectV1Repository.findOneById(id);
+
+        if (!project) {
+            throw new NotFoundException(ERROR_MESSAGE_CONSTANT.NotFound);
+        }
+
+        await this.projectV1Repository.update(project.id, {
+            platform,
+            name: dto.name,
+            description: dto.description,
+            status: dto.status,
+        });
+    }
+
+    async detail(id: string): Promise<IProject> {
+        const project = await this.projectV1Repository.findOneByIdWithRelations(
+            id,
+            ['platform', 'projectKeys'],
+        );
+
+        if (!project) {
+            throw new NotFoundException(ERROR_MESSAGE_CONSTANT.NotFound);
+        }
+
+        return project;
+    }
+
+    async deleteByIds(ids: string[]): Promise<void> {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        for (let i = 0; i < ids.length; i++) {
+            const project = await this.projectV1Repository.findOneById(ids[i]);
+
+            if (!project) {
+                throw new NotFoundException(ERROR_MESSAGE_CONSTANT.NotFound);
+            }
+        }
+
+        try {
+            await this.projectKeyV1Repository.deleteByProjectIdsWithTransaction(
+                queryRunner,
+                ids,
+            );
+
+            await this.projectV1Repository.deleteByIdsWithTransaction(
+                queryRunner,
+                ids,
+            );
+
+            await queryRunner.commitTransaction();
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
+        }
     }
 }
