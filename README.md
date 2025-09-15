@@ -1,10 +1,10 @@
-# Nest Inertia Boilerplate
+# ORM Query Analyzer API
 
-Boilerplate using NestJS
+ORM Query Analyzer API
 
 # Table of Contents
 
-- [Nest Inertia Boilerplate](#nest-inertia-boilerplate)
+- [ORM Query Analyzer API](#orm-query-analyzer-api)
 - [Table of Contents](#table-of-contents)
 - [Tech Stack:](#tech-stack)
 - [Project Installation](#project-installation)
@@ -26,6 +26,7 @@ Boilerplate using NestJS
 - Yarn v1.22.22
 - PostgreSQL 17.4
 - Mongo 8.0
+- Redis
 
 # Project Installation
 
