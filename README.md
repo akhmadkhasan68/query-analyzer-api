@@ -25,6 +25,7 @@ Boilerplate using NestJS
 - NodeJS LTS v22
 - Yarn v1.22.22
 - PostgreSQL 17.4
+- Mongo 8.0
 
 # Project Installation
 
