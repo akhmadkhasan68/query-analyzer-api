@@ -6,16 +6,20 @@ import {
     IQueryTransactionEvent,
     IQueryTransactionEventExecutionPlanFormat,
 } from 'src/infrastructures/databases/schema/interfaces/query-transaction-event.interface';
+import { IQueryTransaction } from 'src/infrastructures/databases/schema/interfaces/query-transaction.interface';
 import { QUEUE_NAME } from 'src/infrastructures/modules/queue/constants/queue-name.constant';
 import { IQueueService } from 'src/infrastructures/modules/queue/interfaces/queue-service.interface';
 import { QueueFactoryService } from 'src/infrastructures/modules/queue/services/queue-factory.service';
 import { ProjectKeyV1Repository } from 'src/modules/project/repositories/project-key-v1.repository';
 import { ProjectV1Repository } from 'src/modules/project/repositories/project-v1.repository';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
+import { HashUtil } from 'src/shared/utils/hash.util';
 import { QueryTransactionEventCaptureV1Request } from '../dtos/requests/query-transaction-event-capture-v1.request';
 import { QueryTransactionEventPaginationV1Request } from '../dtos/requests/query-transaction-event-paginate-v1.request';
 import { QueryTransactionEventV1Repository } from '../repositories/query-transaction-event-v1.repository';
+import { QueryTransactionV1Repository } from '../repositories/query-transaction-v1.repository';
 import { QueryTransactionSeverityEnum } from '../shared/enums/query-transaction-severity.enum';
+import { QueryTransactionV1Service } from './query-transaction-v1.service';
 
 @Injectable()
 export class QueryTransactionEventV1Service {
@@ -25,10 +29,12 @@ export class QueryTransactionEventV1Service {
     private queueQueryTransactionEventService: IQueueService;
 
     constructor(
+        private readonly queryTransactionRepository: QueryTransactionV1Repository,
         private readonly queryTransactionEventRepository: QueryTransactionEventV1Repository,
         private readonly projectRepository: ProjectV1Repository,
         private readonly projectKeyRepository: ProjectKeyV1Repository,
         private readonly queueFactoryService: QueueFactoryService,
+        private readonly queryTransactionV1Service: QueryTransactionV1Service,
     ) {
         this.queueQueryTransactionEventService =
             this.queueFactoryService.createQueueService(
@@ -57,7 +63,7 @@ export class QueryTransactionEventV1Service {
         }
 
         const [projectDetail, projectKeyDetail] = await Promise.all([
-            this.projectRepository.findOneByIdWithRelationsOrFail(projectId, [
+            this.projectRepository.findOneOrFailByIdWithRelations(projectId, [
                 'platform',
             ]),
             this.projectKeyRepository.findOneByIdOrFail(projectKey.id),
@@ -106,10 +112,88 @@ export class QueryTransactionEventV1Service {
                 };
             }
 
+            // Query Transaction Event Signture
+            const querySignature = this.generateQueryTransactionEventSignature(
+                project,
+                projectKey,
+                request,
+            );
+
+            // Check if Query Transaction already exists by Signature
+            const isExistsBySignature =
+                await this.queryTransactionRepository.isExistsBySignature(
+                    querySignature,
+                );
+
+            let queryTransaction: IQueryTransaction;
+            if (!isExistsBySignature) {
+                // Create new Query Transaction
+                queryTransaction =
+                    await this.queryTransactionV1Service.createTransaction({
+                        projectId: project.id,
+                        signature: querySignature,
+                        totalExecutionTime: request.executionTimeMs,
+                        averageExecutionTime: request.executionTimeMs,
+                        maxExecutionTime: request.executionTimeMs,
+                        minExecutionTime: request.executionTimeMs,
+                        environment: request.environment,
+                    });
+            } else {
+                // Update existing Query Transaction
+                queryTransaction =
+                    await this.queryTransactionV1Service.updateTransactionBySignature(
+                        querySignature,
+                        {
+                            totalExecutionTime: request.executionTimeMs,
+                            maxExecutionTime: request.executionTimeMs,
+                            minExecutionTime: request.executionTimeMs,
+                        },
+                    );
+            }
+
+            // Link Event to Transaction
+            eventData.transaction = queryTransaction;
+
+            // Save Query Transaction Event
             await this.queryTransactionEventRepository.create(eventData);
         } catch (error) {
             throw error;
         }
+    }
+
+    private generateQueryTransactionEventSignature(
+        project: IProject,
+        projectKey: IProjectKey,
+        request: QueryTransactionEventCaptureV1Request,
+    ): string {
+        // Create a unique signature for the query transaction
+        const signatureComponents = [
+            project.id,
+            projectKey.id,
+            request.environment,
+        ];
+
+        if (request.stackTrace && request.stackTrace.length > 0) {
+            const stackTraceString = request.stackTrace
+                .map((trace) => trace.trim())
+                .join('-');
+
+            signatureComponents.push(stackTraceString);
+        }
+
+        if (request.parameters && Object.keys(request.parameters).length > 0) {
+            const paramsString = Object.keys(request.parameters)
+                .sort()
+                .map(
+                    (key) =>
+                        `${key}:${JSON.stringify(request.parameters[key])}`,
+                )
+                .join('-');
+
+            signatureComponents.push(paramsString);
+        }
+
+        return HashUtil.generateSha256Hex(signatureComponents.join('|'));
     }
 
     private determineSeverity(

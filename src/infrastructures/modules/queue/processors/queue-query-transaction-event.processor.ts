@@ -32,7 +32,9 @@ export class QueueQueryTransactionEventProcessor extends WorkerHost {
                 request,
             );
         } catch (error) {
-            this.logger.error(`Error processing job: ${error.message}`);
+            this.logger.error(
+                `Error processing job: ${error.message} ${error.stack}`,
+            );
             throw new Error(`Failed to process job: ${error.message}`);
         }
     }

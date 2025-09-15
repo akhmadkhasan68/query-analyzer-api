@@ -21,6 +21,27 @@ export class QueryTransactionV1Repository {
         return await this.queryTransactionModel.findById(id).exec();
     }
 
+    async isExistsBySignature(signature: string): Promise<boolean> {
+        const data = await this.queryTransactionModel
+            .exists({ signature })
+            .exec();
+        return !!data;
+    }
+
+    async findOneOrFailBySignature(
+        signature: string,
+    ): Promise<IQueryTransaction> {
+        const data = await this.queryTransactionModel
+            .findOne({ signature })
+            .exec();
+
+        if (!data) {
+            throw new DataNotFoundException();
+        }
+
+        return data;
+    }
+
     async findByIdOrFail(id: string): Promise<IQueryTransaction> {
         const result = await this.queryTransactionModel.findById(id).exec();
 
@@ -34,10 +55,16 @@ export class QueryTransactionV1Repository {
     async update(
         id: string,
         data: Partial<IQueryTransaction>,
-    ): Promise<IQueryTransaction | null> {
-        return await this.queryTransactionModel
+    ): Promise<IQueryTransaction> {
+        const updated = await this.queryTransactionModel
             .findByIdAndUpdate(id, data, { new: true })
             .exec();
+
+        if (!updated) {
+            throw new DataNotFoundException();
+        }
+
+        return updated;
     }
 
     async delete(id: string): Promise<IQueryTransaction | null> {

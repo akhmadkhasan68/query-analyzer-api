@@ -89,7 +89,7 @@ export class ProjectV1Repository extends Repository<IProject> {
         });
     }
 
-    async findOneByIdWithRelationsOrFail(
+    async findOneOrFailByIdWithRelations(
         id: string,
         relations?: string[],
     ): Promise<IProject> {
