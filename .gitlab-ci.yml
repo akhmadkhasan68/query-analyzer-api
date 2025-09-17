@@ -6,7 +6,7 @@ stages:
 .build:docker_image:
   stage: build
   image: docker:20.10
-  tags: [dot-2highcpu]
+  tags: [dot-highcpu]
   allow_failure: false
   variables:
     DOCKER_IMAGE_NAME: ${HARBOR_HOST}/${HARBOR_PROJECT}/queryanalyzerapi
@@ -26,8 +26,6 @@ build_main:docker_image:
   extends: .build:docker_image
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-  variables:
-    DOTENV_FILE_PATH: $DOTENV
 
 .deploy:docker_swarm:
   stage: deploy
