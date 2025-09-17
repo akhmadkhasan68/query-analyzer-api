@@ -1,0 +1,56 @@
+stages:
+  - test
+  - build
+  - deploy
+
+.build:docker_image:
+  stage: build
+  image: docker:20.10
+  tags: [dot-highcpu]
+  allow_failure: false
+  variables:
+    DOCKER_IMAGE_NAME: ${HARBOR_HOST}/${HARBOR_PROJECT}/queryanalyzerapi
+  before_script:
+    - docker login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} ${HARBOR_HOST}
+  script:
+    - docker build
+      --progress plain
+      --tag ${DOCKER_IMAGE_NAME}:${CI_COMMIT_BRANCH}${CI_COMMIT_SHORT_SHA}
+      --tag ${DOCKER_IMAGE_NAME}:${CI_COMMIT_BRANCH}
+      --file Dockerfile
+      .
+    - docker push ${DOCKER_IMAGE_NAME}:${CI_COMMIT_BRANCH}${CI_COMMIT_SHORT_SHA}
+    - docker push ${DOCKER_IMAGE_NAME}:${CI_COMMIT_BRANCH}
+  
+build_main:docker_image:
+  extends: .build:docker_image
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+.deploy:docker_swarm:
+  stage: deploy
+  image: dotindonesia/ansible:2.13.10
+  tags: [dot]
+  allow_failure: false
+  before_script:
+    - chmod 600 $ANSIBLE_KEY_FILE
+    - ansible-galaxy collection install community.docker:==3.10.0
+
+deploy_main:docker_swarm:
+  extends: .deploy:docker_swarm
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  environment:
+    name: main
+    url: https://queryanalyzerapi.devnstg.com
+  script:
+    - ansible-playbook --private-key $ANSIBLE_KEY_FILE -i deploy/hosts -v deploy/main.yml
+
+include:
+  # sonarqube scanner
+  - component: gitlab.dot.co.id/cicd-components/sonarqube/cli@main
+    inputs:
+      run-on: /^develop$|^staging$|^main$/i
+      sonar-project-key: QueryAnalyzerAPI
+      sonar-project-name: QueryAnalyzerAPI
+
