@@ -1,0 +1,35 @@
+---
+- name: Deploy environment to sandbox
+  hosts: development
+  remote_user: project
+  gather_facts: false
+  environment:
+    DOCKER_TIMEOUT: 600
+  vars:
+    stack_name: "orm-query-analyzer"
+    container_version: "{{ lookup('env', 'CI_COMMIT_SHORT_SHA') }}"
+    container_image: "hrbr.devnstg.com/orm-query-analyzer/queryanalyzerapi:main{{ container_version }}"
+
+  tasks:
+    - name: Update service docker image
+      changed_when: false
+      ansible.builtin.shell: |
+        docker service update {{ stack_name }}_queryanalyzerapi \
+          --image {{ container_image }} \
+          --with-registry-auth
+
+    - name: Waiting deployment ready
+      ansible.builtin.uri:
+        url: https://queryanalyzerapi.devnstg.com/health
+        validate_certs: false
+      register: result
+      until: "result.status == 404"
+      retries: 60
+      delay: 10
+
+    - name: delete old image
+      community.docker.docker_prune:
+        containers: true
+        images: true
+        images_filters:
+          dangling: false
