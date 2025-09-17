@@ -22,6 +22,7 @@
       ansible.builtin.uri:
         url: https://queryanalyzerapi.devnstg.com/health
         validate_certs: false
+        status_code: 404
       register: result
       until: "result.status == 404"
       retries: 60
