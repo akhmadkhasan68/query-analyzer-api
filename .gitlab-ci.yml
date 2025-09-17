@@ -11,7 +11,7 @@ stages:
   variables:
     DOCKER_IMAGE_NAME: ${HARBOR_HOST}/${HARBOR_PROJECT}/queryanalyzerapi
   before_script:
-    - - docker login -u ${DOT_HARBOR_USERNAME} -p ${DOT_HARBOR_PASSWORD} ${DOT_HARBOR_HOST}
+    - docker login -u ${DOT_HARBOR_USERNAME} -p ${DOT_HARBOR_PASSWORD} ${DOT_HARBOR_HOST}
   script:
     - docker build
       --progress plain
