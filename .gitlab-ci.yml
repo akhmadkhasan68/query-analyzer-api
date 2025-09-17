@@ -45,3 +45,12 @@ deploy_main:docker_swarm:
     url: https://queryanalyzerapi.devnstg.com
   script:
     - ansible-playbook --private-key $ANSIBLE_KEY_FILE -i deploy/hosts -v deploy/main.yml
+
+include:
+  # sonarqube scanner
+  - component: gitlab.dot.co.id/cicd-components/sonarqube/cli@main
+    inputs:
+      run-on: /^develop$|^staging$|^main$/i
+      sonar-project-key: QueryAnalyzerAPI
+      sonar-project-name: QueryAnalyzerAPI
+
