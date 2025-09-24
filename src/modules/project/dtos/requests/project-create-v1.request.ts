@@ -14,6 +14,12 @@ export const ProjectCreateV1Schema = z.object({
             required_error: 'Platform ID is required',
         })
         .uuid(),
+    gitlabProjectId: z.number().optional(),
+    gitlabUrl: z.string().url().optional(),
+    gitlabGroupId: z.number().optional(),
+    gitlabGroupName: z.string().optional(),
+    gitlabDefaultBranch: z.string().optional(),
+    gitlabVisibility: z.string().optional(),
 });
 
 export const ProjectDeleteByIdsV1Schema = z.object({

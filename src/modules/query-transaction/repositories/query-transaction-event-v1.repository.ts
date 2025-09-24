@@ -100,6 +100,16 @@ export class QueryTransactionEventV1Repository {
         return createdQueryTransactionEvent.save();
     }
 
+    async findByIds(ids: string[]): Promise<IQueryTransactionEvent[]> {
+        return (
+            this.queryTransactionEventModel
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                .find({ _id: { $in: ids } })
+                .exec()
+        );
+    }
+
     async findById(id: string): Promise<IQueryTransactionEvent | null> {
         return this.queryTransactionEventModel.findById(id).exec();
     }

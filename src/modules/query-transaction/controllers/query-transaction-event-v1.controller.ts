@@ -5,6 +5,7 @@ import { ExcludeGlobalGuard } from 'src/modules/iam/shared/decorators/public.dec
 import { ProjectApiKeyGuard } from 'src/modules/iam/shared/guards/project-api-key.guard';
 import { IBasicResponse } from 'src/shared/interfaces/basic-response.interface';
 import { IPaginationResponse } from 'src/shared/interfaces/paginate-response.interface';
+import { QueryTransactionEventAiAnalyzeV1Request } from '../dtos/requests/query-transaction-event-ai-analyze.request';
 import { QueryTransactionEventCaptureV1Request } from '../dtos/requests/query-transaction-event-capture-v1.request';
 import { QueryTransactionEventPaginationV1Request } from '../dtos/requests/query-transaction-event-paginate-v1.request';
 import { QueryTransactionEventV1Response } from '../dtos/responses/query-transaction-event-v1.response';
@@ -33,6 +34,18 @@ export class QueryTransactionEventV1Controller {
 
         return {
             message: 'Event captured successfully',
+            data: null,
+        };
+    }
+
+    @Post('ai-analyze')
+    async AIAnalyze(
+        @Body() request: QueryTransactionEventAiAnalyzeV1Request,
+    ): Promise<IBasicResponse<null>> {
+        await this.queryTransactionEventService.AIAnalyze(request);
+
+        return {
+            message: 'AI analysis initiated successfully',
             data: null,
         };
     }

@@ -1,4 +1,8 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    UnprocessableEntityException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/project-key.interface';
 import { IProject } from 'src/infrastructures/databases/entities/interfaces/project.interface';
@@ -7,13 +11,20 @@ import {
     IQueryTransactionEventExecutionPlanFormat,
 } from 'src/infrastructures/databases/schema/interfaces/query-transaction-event.interface';
 import { IQueryTransaction } from 'src/infrastructures/databases/schema/interfaces/query-transaction.interface';
-import { QUEUE_NAME } from 'src/infrastructures/modules/queue/constants/queue-name.constant';
+import {
+    QueueName,
+    QueueQueryTransactionEventJob,
+} from 'src/infrastructures/modules/queue/constants/queue-name.constant';
+import { QueueQueryTransactionEventSendAiAnalysisEventDto } from 'src/infrastructures/modules/queue/dtos/queue-query-transaction-event-send-ai-analysis-event.dto';
+import { QueueQueryTransactionEventDto } from 'src/infrastructures/modules/queue/dtos/queue-query-transaction-event.dto';
 import { IQueueService } from 'src/infrastructures/modules/queue/interfaces/queue-service.interface';
 import { QueueFactoryService } from 'src/infrastructures/modules/queue/services/queue-factory.service';
 import { ProjectKeyV1Repository } from 'src/modules/project/repositories/project-key-v1.repository';
 import { ProjectV1Repository } from 'src/modules/project/repositories/project-v1.repository';
+import { ERROR_MESSAGE_CONSTANT } from 'src/shared/constants/error-message.constant';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { HashUtil } from 'src/shared/utils/hash.util';
+import { QueryTransactionEventAiAnalyzeV1Request } from '../dtos/requests/query-transaction-event-ai-analyze.request';
 import { QueryTransactionEventCaptureV1Request } from '../dtos/requests/query-transaction-event-capture-v1.request';
 import { QueryTransactionEventPaginationV1Request } from '../dtos/requests/query-transaction-event-paginate-v1.request';
 import { QueryTransactionEventV1Repository } from '../repositories/query-transaction-event-v1.repository';
@@ -38,7 +49,7 @@ export class QueryTransactionEventV1Service {
     ) {
         this.queueQueryTransactionEventService =
             this.queueFactoryService.createQueueService(
-                QUEUE_NAME.QueryTransactionEvent,
+                QueueName.QueryTransactionEvent,
             );
     }
 
@@ -65,16 +76,20 @@ export class QueryTransactionEventV1Service {
         const [projectDetail, projectKeyDetail] = await Promise.all([
             this.projectRepository.findOneOrFailByIdWithRelations(projectId, [
                 'platform',
+                'projectGitlab',
             ]),
             this.projectKeyRepository.findOneByIdOrFail(projectKey.id),
         ]);
 
         // Send to Queue for processing
-        await this.queueQueryTransactionEventService.sendToQueue({
-            project: projectDetail,
-            projectKey: projectKeyDetail,
-            ...request,
-        });
+        await this.queueQueryTransactionEventService.sendToQueue<QueueQueryTransactionEventDto>(
+            {
+                project: projectDetail,
+                projectKey: projectKeyDetail,
+                ...request,
+            },
+            QueueQueryTransactionEventJob.SendQueryTransactionEvent,
+        );
     }
 
     public async queueProcessCaptureEvent(
@@ -156,6 +171,41 @@ export class QueryTransactionEventV1Service {
 
             // Save Query Transaction Event
             await this.queryTransactionEventRepository.create(eventData);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async AIAnalyze(
+        request: QueryTransactionEventAiAnalyzeV1Request,
+    ): Promise<void> {
+        const events = await this.queryTransactionEventRepository.findByIds(
+            request.ids,
+        );
+
+        if (events.length !== request.ids.length) {
+            const notFoundIds = request.ids.filter(
+                (id) => !events.find((event) => event.id === id),
+            );
+
+            throw new NotFoundException(
+                ERROR_MESSAGE_CONSTANT.DataIdsNotFound(notFoundIds),
+            );
+        }
+
+        for (const event of events) {
+            await this.queueQueryTransactionEventService.sendToQueue<QueueQueryTransactionEventSendAiAnalysisEventDto>(
+                event,
+                QueueQueryTransactionEventJob.SendAIAnalysisEvent,
+            );
+        }
+    }
+
+    async queueProcessAIAnalyze(
+        _event: QueueQueryTransactionEventSendAiAnalysisEventDto,
+    ): Promise<void> {
+        try {
+            // TODO: implement AI analyze process result
         } catch (error) {
             throw error;
         }

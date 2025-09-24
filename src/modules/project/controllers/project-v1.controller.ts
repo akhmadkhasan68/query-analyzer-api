@@ -80,7 +80,7 @@ export class ProjectV1Controller {
         @Param('id') id: string,
         @Body() updateDto: ProjectUpdateV1Request,
     ): Promise<IBasicResponse<ProjectV1Response>> {
-        const result = await this.projectV1Service.update(id, updateDto);
+        await this.projectV1Service.update(id, updateDto);
 
         return {
             message: 'Project updated successfully',
@@ -105,7 +105,7 @@ export class ProjectV1Controller {
     async deleteByIds(
         @Body() deleteByIdsDto: ProjectDeleteByIdsV1Request,
     ): Promise<IBasicResponse<ProjectV1Response>> {
-        const result = await this.projectV1Service.deleteByIds(
+        await this.projectV1Service.deleteByIds(
             deleteByIdsDto.ids,
         );
 

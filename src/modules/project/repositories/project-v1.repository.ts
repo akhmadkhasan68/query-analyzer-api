@@ -31,10 +31,9 @@ export class ProjectV1Repository extends Repository<IProject> {
             ['created_at', `${alias}.createdAt`],
         ]);
 
-        const query = this.createQueryBuilder(alias).leftJoinAndSelect(
-            `${alias}.platform`,
-            'platform',
-        );
+        const query = this.createQueryBuilder(alias)
+            .leftJoinAndSelect(`${alias}.platform`, 'platform')
+            .leftJoinAndSelect(`${alias}.projectGitlab`, 'projectGitlab');
 
         // Validate the sort value in the request
         TypeORMQueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS);

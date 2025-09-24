@@ -54,14 +54,14 @@ export class QueryTransactionV1Service {
             existingTransaction.totalExecutionTime /
             existingTransaction.occurrenceCount;
 
-        if (data.maxExecutionTime !== undefined) {
+        if (data.maxExecutionTime) {
             existingTransaction.maxExecutionTime = Math.max(
                 existingTransaction.maxExecutionTime || 0,
                 data.maxExecutionTime,
             );
         }
 
-        if (data.minExecutionTime !== undefined) {
+        if (data.minExecutionTime) {
             existingTransaction.minExecutionTime = Math.min(
                 existingTransaction.minExecutionTime || Infinity,
                 data.minExecutionTime,

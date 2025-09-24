@@ -43,6 +43,10 @@ async function bootstrap() {
         defaultVersion: '1',
     });
 
+    app.useBodyParser('json', {
+        limit: '100mb',
+    });
+
     // Storage Path
     const storagePath = path.join(__dirname, '..', config.storage.rootPath);
     app.useStaticAssets(storagePath, {

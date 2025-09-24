@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Platform } from 'src/infrastructures/databases/entities/platform.entity';
+import { ProjectGitlab } from 'src/infrastructures/databases/entities/project-gitlab.entity';
 import { ProjectKey } from 'src/infrastructures/databases/entities/project-key.entity';
 import { Project } from 'src/infrastructures/databases/entities/project.entity';
 import { PlatformV1Controller } from '../platform/controllers/platform-v1.controller';
@@ -9,6 +10,7 @@ import { PlatformV1Repository } from '../platform/repositories/platform-v1.repos
 import { PlatformV1Service } from '../platform/services/platform-v1.service';
 import { ProjectKeyV1Controller } from './controllers/project-key-v1.controller';
 import { ProjectV1Controller } from './controllers/project-v1.controller';
+import { ProjectGitlabV1Repository } from './repositories/project-gitlab-v1.repository';
 import { ProjectKeyV1Repository } from './repositories/project-key-v1.repository';
 import { ProjectV1Repository } from './repositories/project-v1.repository';
 import { ProjectKeyV1Service } from './services/project-key-v1.service';
@@ -16,7 +18,12 @@ import { ProjectV1Service } from './services/project-v1.service';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Project, ProjectKey, Platform]),
+        TypeOrmModule.forFeature([
+            Project,
+            ProjectKey,
+            Platform,
+            ProjectGitlab,
+        ]),
         PlatformModule,
     ],
     controllers: [
@@ -34,6 +41,7 @@ import { ProjectV1Service } from './services/project-v1.service';
         ProjectV1Repository,
         ProjectKeyV1Repository,
         PlatformV1Repository,
+        ProjectGitlabV1Repository,
     ],
     exports: [
         ProjectV1Service,
@@ -43,6 +51,7 @@ import { ProjectV1Service } from './services/project-v1.service';
         ProjectV1Repository,
         ProjectKeyV1Repository,
         PlatformV1Repository,
+        ProjectGitlabV1Repository,
     ],
 })
 export class ProjectModule {}

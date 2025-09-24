@@ -1,3 +1,5 @@
+import { TQueueJob } from '../constants/queue-name.constant';
+
 export interface IQueueService {
-    sendToQueue(data: any): Promise<void>;
+    sendToQueue<T>(data: T, jobName: TQueueJob): Promise<void>;
 }

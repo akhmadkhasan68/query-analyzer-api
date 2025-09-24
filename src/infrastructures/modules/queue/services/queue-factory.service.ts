@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { QUEUE_NAME, TQueueName } from '../constants/queue-name.constant';
+import { QueueName, TQueueName } from '../constants/queue-name.constant';
 import { IQueueService } from '../interfaces/queue-service.interface';
 import { QueueMailService } from './queue-mail.service';
 import { QueueQueryTransactionEventService } from './queue-query-transaction-event.service';
@@ -9,19 +9,19 @@ import { QueueQueryTransactionEventService } from './queue-query-transaction-eve
 @Injectable()
 export class QueueFactoryService {
     constructor(
-        @InjectQueue(QUEUE_NAME.Mail)
+        @InjectQueue(QueueName.Mail)
         private readonly queueMail: Queue,
 
-        @InjectQueue(QUEUE_NAME.QueryTransactionEvent)
+        @InjectQueue(QueueName.QueryTransactionEvent)
         private readonly queueQueryTransactionEvent: Queue,
     ) {}
 
     createQueueService(queueName: TQueueName): IQueueService {
         switch (queueName) {
-            case QUEUE_NAME.Mail: {
+            case QueueName.Mail: {
                 return new QueueMailService(this.queueMail);
             }
-            case QUEUE_NAME.QueryTransactionEvent: {
+            case QueueName.QueryTransactionEvent: {
                 return new QueueQueryTransactionEventService(
                     this.queueQueryTransactionEvent,
                 );

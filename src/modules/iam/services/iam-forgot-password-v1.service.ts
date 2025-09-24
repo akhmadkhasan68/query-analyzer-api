@@ -2,8 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { config } from 'src/config';
 import { IUser } from 'src/infrastructures/databases/entities/interfaces/user.interface';
+import { MailSendDto } from 'src/infrastructures/modules/mail/dto/mail-send.dto';
 import { MailTemplateFileEnum } from 'src/infrastructures/modules/mail/enums/mail-template-file.enum';
-import { QUEUE_NAME } from 'src/infrastructures/modules/queue/constants/queue-name.constant';
+import {
+    QueueMailJob,
+    QueueName,
+} from 'src/infrastructures/modules/queue/constants/queue-name.constant';
 import { IQueueService } from 'src/infrastructures/modules/queue/interfaces/queue-service.interface';
 import { QueueFactoryService } from 'src/infrastructures/modules/queue/services/queue-factory.service';
 import { UserTokenTypeEnum } from 'src/shared/enums/user-token.enum';
@@ -26,7 +30,7 @@ export class IamForgotPasswordV1Service {
         private readonly queueFactoryService: QueueFactoryService,
     ) {
         this.queueMailService = this.queueFactoryService.createQueueService(
-            QUEUE_NAME.Mail,
+            QueueName.Mail,
         );
     }
 
@@ -181,14 +185,17 @@ export class IamForgotPasswordV1Service {
         user: IUser,
         resetLink: string,
     ): Promise<void> {
-        await this.queueMailService.sendToQueue({
-            to: user.email,
-            subject: 'Password Reset Request',
-            template: MailTemplateFileEnum.ForgotPassword,
-            context: {
-                name: user.fullname,
-                resetLink,
+        await this.queueMailService.sendToQueue<MailSendDto>(
+            {
+                to: user.email,
+                subject: 'Password Reset Request',
+                template: MailTemplateFileEnum.ForgotPassword,
+                context: {
+                    name: user.fullname,
+                    resetLink,
+                },
             },
-        });
+            QueueMailJob.SendMail,
+        );
     }
 }

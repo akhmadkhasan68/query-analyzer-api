@@ -36,7 +36,7 @@ export class StorageFileV1Service {
             await this.storageFileV1Repository.save(result);
 
             return result;
-        } catch (error) {
+        } catch (_error) {
             throw new Error(ERROR_MESSAGE_CONSTANT.FileUpload);
         }
     }
@@ -63,7 +63,7 @@ export class StorageFileV1Service {
             await this.storageFactoryService
                 .setStorageDriverService(file.driver)
                 .deleteFile(file.path);
-        } catch (error) {
+        } catch (_error) {
             throw new Error(ERROR_MESSAGE_CONSTANT.FileDelete);
         }
     }

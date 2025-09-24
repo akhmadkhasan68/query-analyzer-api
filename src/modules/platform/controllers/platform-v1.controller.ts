@@ -12,13 +12,8 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { Permission } from 'src/modules/iam/shared/decorators/permission.decorator';
 import { JwtAuthTypeEnum } from 'src/modules/iam/shared/enums/token-type.enum';
 import { OPERATION, RESOURCE } from 'src/shared/constants/permission.constant';
-import { IPaginationResponse } from 'src/shared/interfaces/paginate-response.interface';
-// import {
-//     PlatformCreateV1Request,
-//     PlatformDeleteByIdsV1Request,
-//     PlatformUpdateV1Request,
-// } from '../dtos/requests/platform-create-v1.request';
 import { IBasicResponse } from 'src/shared/interfaces/basic-response.interface';
+import { IPaginationResponse } from 'src/shared/interfaces/paginate-response.interface';
 import {
     PlatformCreateV1Request,
     PlatformDeleteByIdsV1Request,
@@ -98,7 +93,7 @@ export class PlatformV1Controller {
         @Param('id') id: string,
         @Body() updateDto: PlatformUpdateV1Request,
     ): Promise<IBasicResponse<PlatformV1Response>> {
-        const result = await this.platformV1Service.update(id, updateDto);
+        await this.platformV1Service.update(id, updateDto);
 
         return {
             message: 'Platform updated successfully',
@@ -110,7 +105,7 @@ export class PlatformV1Controller {
     async deleteByIds(
         @Body() deleteByIdsDto: PlatformDeleteByIdsV1Request,
     ): Promise<IBasicResponse<PlatformV1Response>> {
-        const result = await this.platformV1Service.deleteByIds(
+        await this.platformV1Service.deleteByIds(
             deleteByIdsDto.ids,
         );
 

@@ -1,18 +1,9 @@
 import { Queue } from 'bullmq';
-import { QueueQueryTransactionEventDto } from '../dtos/queue-query-transaction-event.dto';
+import { TQueueQueryTransactionEventJob } from '../constants/queue-name.constant';
 import { IQueueService } from '../interfaces/queue-service.interface';
 
 export class QueueQueryTransactionEventService implements IQueueService {
-    constructor(private readonly queue: Queue<QueueQueryTransactionEventDto>) {}
-
-    /**
-     * The name of the job that will be added to the queue.
-     * This is used to identify the job type when processing it.
-     * * @private
-     * @type {string}
-     * @memberof QueueQueryTransactionEventService
-     */
-    private readonly JOB_NAME: string = 'send-query-transaction-event';
+    constructor(private readonly queue: Queue) {}
 
     /**
      * Adds a job to the queue to send an email.
@@ -20,9 +11,12 @@ export class QueueQueryTransactionEventService implements IQueueService {
      * @returns {Promise<void>} A promise that resolves when the job is added to the queue.
      * @memberof QueueQueryTransactionEventService
      */
-    async sendToQueue(data: QueueQueryTransactionEventDto): Promise<void> {
+    async sendToQueue<T>(
+        data: T,
+        jobName: TQueueQueryTransactionEventJob,
+    ): Promise<void> {
         try {
-            await this.queue.add(this.JOB_NAME, data);
+            await this.queue.add(jobName, data);
         } catch (error) {
             throw new Error(`Failed to add job to the queue: ${error.message}`);
         }
