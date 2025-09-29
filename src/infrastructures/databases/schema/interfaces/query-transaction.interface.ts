@@ -5,6 +5,8 @@ import { IBaseSchema } from './base-schema.interface';
 
 export interface IQueryTransaction extends IBaseSchema {
     project: IProject;
+    rawQuery: string;
+    parameters: Record<string, any>;
     signature: string;
     description?: string;
     status: QueryTransactionStatusEnum;

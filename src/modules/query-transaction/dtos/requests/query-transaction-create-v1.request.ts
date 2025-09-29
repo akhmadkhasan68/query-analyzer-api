@@ -3,6 +3,8 @@ import { z } from 'zod';
 
 export const QueryTransactionCreateV1Schema = z.object({
     projectId: z.string().uuid(),
+    rawQuery: z.string(),
+    parameters: z.record(z.any()),
     signature: z.string().min(1).max(2048),
     totalExecutionTime: z.number().min(0),
     averageExecutionTime: z.number().min(0),

@@ -146,6 +146,8 @@ export class QueryTransactionEventV1Service {
                 queryTransaction =
                     await this.queryTransactionV1Service.createTransaction({
                         projectId: project.id,
+                        rawQuery: request.rawQuery,
+                        parameters: request.parameters || {},
                         signature: querySignature,
                         totalExecutionTime: request.executionTimeMs,
                         averageExecutionTime: request.executionTimeMs,

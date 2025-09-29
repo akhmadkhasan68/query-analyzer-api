@@ -18,6 +18,15 @@ export class QueryTransaction extends BaseSchema implements IQueryTransaction {
     project: IProject;
 
     @Prop({ required: true })
+    rawQuery: string;
+
+    @Prop({
+        type: Object,
+        required: true,
+    })
+    parameters: Record<string, any>;
+
+    @Prop({ required: true })
     signature: string;
 
     @Prop({ required: false })
