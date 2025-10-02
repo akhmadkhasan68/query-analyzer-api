@@ -4,3 +4,13 @@ export enum QueryTransactionSeverityEnum {
     HIGH = 'high',
     CRITICAL = 'critical',
 }
+
+export const QueryTransactionSeverityEnumLabels: Record<
+    QueryTransactionSeverityEnum,
+    string
+> = {
+    [QueryTransactionSeverityEnum.LOW]: 'Low',
+    [QueryTransactionSeverityEnum.MEDIUM]: 'Medium',
+    [QueryTransactionSeverityEnum.HIGH]: 'High',
+    [QueryTransactionSeverityEnum.CRITICAL]: 'Critical',
+};

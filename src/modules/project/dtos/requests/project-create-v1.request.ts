@@ -2,6 +2,19 @@ import { ZodUtils } from 'src/shared/utils/zod.util';
 import { z } from 'zod';
 import { ProjectStatusEnum } from '../../shared/enums/project-status.enum';
 
+const ProjectGitlabCreateV1Schema = z.object({
+    projectId: z.number().optional(),
+    url: z.string().url().optional(),
+    groupId: z.number().optional(),
+    groupName: z.string().optional(),
+    defaultBranch: z.string().optional(),
+    visibility: z.string().optional(),
+});
+
+const ProjectSlackChannelCreateV1Schema = z.object({
+    slackChannelId: z.string().optional(),
+});
+
 export const ProjectCreateV1Schema = z.object({
     name: z.string().min(2).max(100),
     description: z.string().max(500).optional(),
@@ -14,12 +27,8 @@ export const ProjectCreateV1Schema = z.object({
             required_error: 'Platform ID is required',
         })
         .uuid(),
-    gitlabProjectId: z.number().optional(),
-    gitlabUrl: z.string().url().optional(),
-    gitlabGroupId: z.number().optional(),
-    gitlabGroupName: z.string().optional(),
-    gitlabDefaultBranch: z.string().optional(),
-    gitlabVisibility: z.string().optional(),
+    gitlab: ProjectGitlabCreateV1Schema.optional(),
+    slackChannel: ProjectSlackChannelCreateV1Schema.optional(),
 });
 
 export const ProjectDeleteByIdsV1Schema = z.object({

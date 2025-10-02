@@ -23,6 +23,8 @@ export class QueryTransactionV1Service {
 
         const createData: Partial<IQueryTransaction> = {
             project,
+            rawQuery: data.rawQuery,
+            parameters: data.parameters,
             signature: data.signature,
             firstOccurrence: new Date(),
             occurrenceCount: 1,

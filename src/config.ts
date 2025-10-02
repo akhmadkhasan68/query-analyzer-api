@@ -90,4 +90,8 @@ export const config = {
         ), // 5 seconds
         retryAttempts: +(process.env.QUEUE_RETRY_ATTEMPTS || 3), // 3 attempts
     },
+    slack: {
+        baseUrl: process.env.SLACK_BASE_URL || 'https://slack.com/api',
+        botOAuthToken: process.env.SLACK_BOT_OAUTH_TOKEN || '',
+    },
 } as const;

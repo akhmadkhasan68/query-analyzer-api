@@ -1,5 +1,6 @@
 import {
     Injectable,
+    Logger,
     NotFoundException,
     UnprocessableEntityException,
 } from '@nestjs/common';
@@ -21,6 +22,8 @@ import { IQueueService } from 'src/infrastructures/modules/queue/interfaces/queu
 import { QueueFactoryService } from 'src/infrastructures/modules/queue/services/queue-factory.service';
 import { ProjectKeyV1Repository } from 'src/modules/project/repositories/project-key-v1.repository';
 import { ProjectV1Repository } from 'src/modules/project/repositories/project-v1.repository';
+import { SlackMessageV1Service } from 'src/modules/slack/services/slack-message-v1.service';
+import { SlackMessageTemplateHelper } from 'src/modules/slack/shared/helpers/slack-message-template.helper';
 import { ERROR_MESSAGE_CONSTANT } from 'src/shared/constants/error-message.constant';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { HashUtil } from 'src/shared/utils/hash.util';
@@ -38,6 +41,7 @@ export class QueryTransactionEventV1Service {
      * Queue service for handling email sending.
      */
     private queueQueryTransactionEventService: IQueueService;
+    private readonly logger = new Logger(QueryTransactionEventV1Service.name);
 
     constructor(
         private readonly queryTransactionRepository: QueryTransactionV1Repository,
@@ -46,6 +50,7 @@ export class QueryTransactionEventV1Service {
         private readonly projectKeyRepository: ProjectKeyV1Repository,
         private readonly queueFactoryService: QueueFactoryService,
         private readonly queryTransactionV1Service: QueryTransactionV1Service,
+        private readonly slackMessageService: SlackMessageV1Service,
     ) {
         this.queueQueryTransactionEventService =
             this.queueFactoryService.createQueueService(
@@ -77,6 +82,7 @@ export class QueryTransactionEventV1Service {
             this.projectRepository.findOneOrFailByIdWithRelations(projectId, [
                 'platform',
                 'projectGitlab',
+                'projectSlackChannels',
             ]),
             this.projectKeyRepository.findOneByIdOrFail(projectKey.id),
         ]);
@@ -97,6 +103,10 @@ export class QueryTransactionEventV1Service {
         projectKey: IProjectKey,
         request: QueryTransactionEventCaptureV1Request,
     ): Promise<void> {
+        this.logger.log(
+            `Processing capture event for project: ${project.id} \n Request: ${JSON.stringify(request)}`,
+        );
+
         try {
             // Create Data Query Transaction Event
             const severity = this.determineSeverity(request.executionTimeMs);
@@ -143,18 +153,22 @@ export class QueryTransactionEventV1Service {
             let queryTransaction: IQueryTransaction;
             if (!isExistsBySignature) {
                 // Create new Query Transaction
+                const queryTransactionData = {
+                    projectId: project.id,
+                    rawQuery: request.rawQuery,
+                    parameters: request.parameters || {},
+                    signature: querySignature,
+                    totalExecutionTime: request.executionTimeMs,
+                    averageExecutionTime: request.executionTimeMs,
+                    maxExecutionTime: request.executionTimeMs,
+                    minExecutionTime: request.executionTimeMs,
+                    environment: request.environment,
+                };
+
                 queryTransaction =
-                    await this.queryTransactionV1Service.createTransaction({
-                        projectId: project.id,
-                        rawQuery: request.rawQuery,
-                        parameters: request.parameters || {},
-                        signature: querySignature,
-                        totalExecutionTime: request.executionTimeMs,
-                        averageExecutionTime: request.executionTimeMs,
-                        maxExecutionTime: request.executionTimeMs,
-                        minExecutionTime: request.executionTimeMs,
-                        environment: request.environment,
-                    });
+                    await this.queryTransactionV1Service.createTransaction(
+                        queryTransactionData,
+                    );
             } else {
                 // Update existing Query Transaction
                 queryTransaction =
@@ -173,7 +187,36 @@ export class QueryTransactionEventV1Service {
 
             // Save Query Transaction Event
             await this.queryTransactionEventRepository.create(eventData);
+
+            // Send Slack Notification
+            if (
+                // severity === QueryTransactionSeverityEnum.MEDIUM &&
+                project.projectSlackChannels &&
+                project.projectSlackChannels.length > 0
+            ) {
+                try {
+                    // Send Slack notification for query transaction event alert
+                    this.slackMessageService.sendMessageToMultipleChannels(
+                        project.projectSlackChannels.map(
+                            (channel) => channel.slackChannelId,
+                        ),
+                        SlackMessageTemplateHelper.queryTransactionEventAlert(
+                            project,
+                            eventData,
+                        ),
+                    );
+                } catch (error) {
+                    // Log error but do not fail the main process
+                    this.logger.error(
+                        `Failed to send Slack notification: ${error.message}`,
+                    );
+                }
+            }
         } catch (error) {
+            this.logger.error(
+                `Error occurred while processing event: ${error.message}`,
+            );
+
             throw error;
         }
     }
@@ -233,13 +276,21 @@ export class QueryTransactionEventV1Service {
             signatureComponents.push(stackTraceString);
         }
 
-        if (request.parameters && Object.keys(request.parameters).length > 0) {
+        if (
+            typeof request.parameters !== 'undefined' &&
+            request.parameters &&
+            Object.keys(request.parameters).length > 0
+        ) {
             const paramsString = Object.keys(request.parameters)
                 .sort()
-                .map(
-                    (key) =>
-                        `${key}:${JSON.stringify(request.parameters[key])}`,
-                )
+                .map((key) => {
+                    const value = request.parameters?.[key];
+
+                    if (value) {
+                        return `${key}:${JSON.stringify(value)}`;
+                    }
+                })
+                .filter((item) => item !== undefined)
                 .join('-');
 
             signatureComponents.push(paramsString);
@@ -248,18 +299,19 @@ export class QueryTransactionEventV1Service {
         return HashUtil.generateSha256Hex(signatureComponents.join('|'));
     }
 
+    // TODO: determine severity based on project settings and thresholds
     private determineSeverity(
         executionTimeMs: number,
     ): QueryTransactionSeverityEnum {
-        const criticalThreshold = 5000; // 5 seconds
-        const highThreshold = 2000; // 2 seconds
-        const mediumThreshold = 1000; // 1 second
+        const criticalThresholdInMs = 5000; // 5 seconds
+        const highThresholdInMs = 2000; // 2 seconds
+        const mediumThresholdInMs = 1000; // 1 second
 
-        if (executionTimeMs > criticalThreshold) {
+        if (executionTimeMs > criticalThresholdInMs) {
             return QueryTransactionSeverityEnum.CRITICAL;
-        } else if (executionTimeMs > highThreshold) {
+        } else if (executionTimeMs > highThresholdInMs) {
             return QueryTransactionSeverityEnum.HIGH;
-        } else if (executionTimeMs > mediumThreshold) {
+        } else if (executionTimeMs > mediumThresholdInMs) {
             return QueryTransactionSeverityEnum.MEDIUM;
         } else {
             return QueryTransactionSeverityEnum.LOW;

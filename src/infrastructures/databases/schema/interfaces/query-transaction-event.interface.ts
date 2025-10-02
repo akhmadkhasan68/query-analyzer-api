@@ -1,3 +1,4 @@
+import { QueryTransactionSeverityEnum } from 'src/modules/query-transaction/shared/enums/query-transaction-severity.enum';
 import { IProject } from '../../entities/interfaces/project.interface';
 import { IBaseSchema } from './base-schema.interface';
 import { IQueryTransaction } from './query-transaction.interface';
@@ -17,7 +18,7 @@ export interface IQueryTransactionEvent extends IBaseSchema {
     applicationName?: string;
     version?: string;
     sourceApiKey: string;
-    severity: string;
+    severity: QueryTransactionSeverityEnum;
     executionPlan?: IQueryTransactionEventExecutionPlan | null;
 }
 

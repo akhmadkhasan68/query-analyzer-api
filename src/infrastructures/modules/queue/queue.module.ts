@@ -1,10 +1,12 @@
 import { BullModule, RegisterQueueOptions } from '@nestjs/bullmq';
 import { forwardRef, Module } from '@nestjs/common';
 import { QueryTransactionModule } from 'src/modules/query-transaction/query-transaction.module';
+import { SlackModule } from 'src/modules/slack/slack.module';
 import { MailModule } from '../mail/mail.module';
 import { QueueName } from './constants/queue-name.constant';
 import { QueueMailProcessor } from './processors/queue-mail.processor';
 import { QueueQueryTransactionEventProcessor } from './processors/queue-query-transaction-event.processor';
+import { QueueSlackProcessor } from './processors/queue-slack.processor';
 import { QueueFactoryService } from './services/queue-factory.service';
 
 @Module({
@@ -18,6 +20,7 @@ import { QueueFactoryService } from './services/queue-factory.service';
         ),
         MailModule,
         forwardRef(() => QueryTransactionModule),
+        forwardRef(() => SlackModule),
     ],
     providers: [
         QueueFactoryService,
@@ -25,6 +28,7 @@ import { QueueFactoryService } from './services/queue-factory.service';
         // Queue Processors
         QueueMailProcessor,
         QueueQueryTransactionEventProcessor,
+        QueueSlackProcessor,
     ],
     exports: [QueueFactoryService],
 })

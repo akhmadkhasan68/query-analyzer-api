@@ -156,4 +156,11 @@ export class StringUtil {
             .replace(/[-_.]/g, ' ')
             .replace(/\b\w/g, (char: string): string => char.toUpperCase());
     }
+
+    static truncateText(text: string, maxLength = 3000): string {
+        if (text.length <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength - 3) + '...';
+    }
 }

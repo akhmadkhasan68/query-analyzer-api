@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { QueryTransactionSeverityEnum } from 'src/modules/query-transaction/shared/enums/query-transaction-severity.enum';
 import { IProject } from '../entities/interfaces/project.interface';
 import { BaseSchema } from './base.schema';
 import {
@@ -40,7 +41,8 @@ export class QueryTransactionEvent
 
     @Prop({
         type: Object,
-        required: true,
+        required: false,
+        default: {},
     })
     parameters: Record<string, any>;
 
@@ -69,7 +71,7 @@ export class QueryTransactionEvent
     sourceApiKey: string;
 
     @Prop({ required: true })
-    severity: string;
+    severity: QueryTransactionSeverityEnum;
 
     @Prop({
         type: Object,

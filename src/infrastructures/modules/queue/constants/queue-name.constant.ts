@@ -1,6 +1,7 @@
 export const QueueName = {
     Mail: 'mail',
     QueryTransactionEvent: 'query-transaction-event',
+    Slack: 'slack',
 } as const;
 
 export type TQueueName = (typeof QueueName)[keyof typeof QueueName];
@@ -19,4 +20,16 @@ export const QueueQueryTransactionEventJob = {
 export type TQueueQueryTransactionEventJob =
     (typeof QueueQueryTransactionEventJob)[keyof typeof QueueQueryTransactionEventJob];
 
-export type TQueueJob = TQueueMailJob | TQueueQueryTransactionEventJob;
+export const QueueSlackJob = {
+    SendSlackMessage: 'send-slack-message',
+} as const;
+
+export type TQueueSlackJob = (typeof QueueSlackJob)[keyof typeof QueueSlackJob];
+
+/**
+ * Union type of all queue job types.
+ */
+export type TQueueJob =
+    | TQueueMailJob
+    | TQueueQueryTransactionEventJob
+    | TQueueSlackJob;

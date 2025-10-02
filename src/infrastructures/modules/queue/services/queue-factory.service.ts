@@ -5,6 +5,7 @@ import { QueueName, TQueueName } from '../constants/queue-name.constant';
 import { IQueueService } from '../interfaces/queue-service.interface';
 import { QueueMailService } from './queue-mail.service';
 import { QueueQueryTransactionEventService } from './queue-query-transaction-event.service';
+import { QueueSlackService } from './queue-slack.service';
 
 @Injectable()
 export class QueueFactoryService {
@@ -14,6 +15,9 @@ export class QueueFactoryService {
 
         @InjectQueue(QueueName.QueryTransactionEvent)
         private readonly queueQueryTransactionEvent: Queue,
+
+        @InjectQueue(QueueName.Slack)
+        private readonly queueSlack: Queue,
     ) {}
 
     createQueueService(queueName: TQueueName): IQueueService {
@@ -25,6 +29,9 @@ export class QueueFactoryService {
                 return new QueueQueryTransactionEventService(
                     this.queueQueryTransactionEvent,
                 );
+            }
+            case QueueName.Slack: {
+                return new QueueSlackService(this.queueSlack);
             }
             default: {
                 throw new Error(

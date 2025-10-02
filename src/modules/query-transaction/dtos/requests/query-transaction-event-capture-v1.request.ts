@@ -16,7 +16,7 @@ export const SlowQueryReportExecutionPlanSchema = z.object({
 export const QueryTransactionEventCaptureV1Schema = z.object({
     queryId: z.string().uuid(),
     rawQuery: z.string(),
-    parameters: z.record(z.any()),
+    parameters: z.record(z.any()).optional(),
     executionTimeMs: z.number(),
     stackTrace: z.array(z.string()).optional(),
     timestamp: z.string().transform((str) => new Date(str)),

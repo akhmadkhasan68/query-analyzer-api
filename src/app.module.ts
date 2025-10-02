@@ -23,6 +23,7 @@ import { ProjectModule } from './modules/project/project.module';
 import { QueryTransactionModule } from './modules/query-transaction/query-transaction.module';
 import { ResourceModule } from './modules/resource/resource.module';
 import { RoleModule } from './modules/role/role.module';
+import { SlackModule } from './modules/slack/slack.module';
 import { StorageFileModule } from './modules/storage-file/storage-file.module';
 import { UserModule } from './modules/user/user.module';
 import { GlobalExceptionHandlerFilter } from './shared/filters/global-exception.filter';
@@ -92,6 +93,7 @@ import { DateTimeUtil } from './shared/utils/datetime.util';
         ProjectModule,
         PlatformModule,
         QueryTransactionModule,
+        SlackModule,
     ],
     providers: [
         {

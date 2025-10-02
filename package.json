@@ -44,7 +44,7 @@
         "@nestjs/typeorm": "^11.0.0",
         "@sentry/nestjs": "^9.31.0",
         "@sentry/profiling-node": "^9.31.0",
-        "axios": "^1.9.0",
+        "axios": "^1.12.2",
         "bcrypt": "^6.0.0",
         "bull": "^4.16.5",
         "bullmq": "^5.56.0",

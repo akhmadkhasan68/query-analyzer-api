@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { IProjectGitlab } from 'src/infrastructures/databases/entities/interfaces/project-gitlab.interface';
 import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/project-key.interface';
+import { IProjectSlackChannel } from 'src/infrastructures/databases/entities/interfaces/project-slack-channel.interface';
 import { IProject } from 'src/infrastructures/databases/entities/interfaces/project.interface';
 import { PlatformV1Repository } from 'src/modules/platform/repositories/platform-v1.repository';
 import { ERROR_MESSAGE_CONSTANT } from 'src/shared/constants/error-message.constant';
@@ -17,6 +18,7 @@ import {
 import { ProjectPaginateV1Request } from '../dtos/requests/project-paginate-v1.request';
 import { ProjectGitlabV1Repository } from '../repositories/project-gitlab-v1.repository';
 import { ProjectKeyV1Repository } from '../repositories/project-key-v1.repository';
+import { ProjectSlackChannelV1Repository } from '../repositories/project-slack-channel-v1.repository';
 import { ProjectV1Repository } from '../repositories/project-v1.repository';
 import { ProjectKeyV1Service } from './project-key-v1.service';
 
@@ -27,8 +29,8 @@ export class ProjectV1Service {
         private readonly projectKeyV1Repository: ProjectKeyV1Repository,
         private readonly projectGitlabV1Repository: ProjectGitlabV1Repository,
         private readonly platformV1Repository: PlatformV1Repository,
-
         private readonly projectKeyV1Service: ProjectKeyV1Service,
+        private readonly projectSlackChannelV1Repository: ProjectSlackChannelV1Repository,
 
         private readonly dataSource: DataSource,
     ) {}
@@ -70,14 +72,22 @@ export class ProjectV1Service {
 
         // Create gitlab project entity if gitlabProjectId is provided
         let projectGitlab: IProjectGitlab | undefined;
-        if (dto.gitlabProjectId) {
+        if (dto.gitlab) {
             projectGitlab = this.projectGitlabV1Repository.create({
-                gitlabProjectId: dto.gitlabProjectId,
-                gitlabUrl: dto.gitlabUrl,
-                gitlabGroupId: dto.gitlabGroupId,
-                gitlabGroupName: dto.gitlabGroupName,
-                gitlabDefaultBranch: dto.gitlabDefaultBranch,
-                gitlabVisibility: dto.gitlabVisibility,
+                gitlabProjectId: dto.gitlab.projectId,
+                gitlabUrl: dto.gitlab.url,
+                gitlabGroupId: dto.gitlab.groupId,
+                gitlabGroupName: dto.gitlab.groupName,
+                gitlabDefaultBranch: dto.gitlab.defaultBranch,
+                gitlabVisibility: dto.gitlab.visibility,
+            });
+        }
+
+        // Create slack channel entity if slackChannelId is provided
+        let projectSlackChannel: IProjectSlackChannel | undefined;
+        if (dto.slackChannel) {
+            projectSlackChannel = this.projectSlackChannelV1Repository.create({
+                slackChannelId: dto.slackChannel.slackChannelId,
             });
         }
 
@@ -85,6 +95,7 @@ export class ProjectV1Service {
             project,
             projectKey,
             projectGitlab,
+            projectSlackChannel,
         );
     }
 
@@ -161,6 +172,7 @@ export class ProjectV1Service {
         project: IProject,
         projectKey: IProjectKey,
         projectGitlab?: IProjectGitlab,
+        projectSlackChannel?: IProjectSlackChannel,
     ): Promise<IProject> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -187,6 +199,14 @@ export class ProjectV1Service {
                 await this.projectGitlabV1Repository.saveWithTransaction(
                     queryRunner,
                     projectGitlab,
+                );
+            }
+
+            if (projectSlackChannel) {
+                projectSlackChannel.projectId = createdProject.id;
+                await this.projectSlackChannelV1Repository.saveWithTransaction(
+                    queryRunner,
+                    projectSlackChannel,
                 );
             }
 

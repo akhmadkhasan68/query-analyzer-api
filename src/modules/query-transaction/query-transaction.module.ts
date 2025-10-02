@@ -10,6 +10,7 @@ import {
 } from 'src/infrastructures/databases/schema/query-transaction.schema';
 import { QueueModule } from 'src/infrastructures/modules/queue/queue.module';
 import { ProjectModule } from '../project/project.module';
+import { SlackModule } from '../slack/slack.module';
 import { QueryTransactionEventV1Controller } from './controllers/query-transaction-event-v1.controller';
 import { QueryTransactionV1Controller } from './controllers/query-transaction-v1.controller';
 import { QueryTransactionEventV1Repository } from './repositories/query-transaction-event-v1.repository';
@@ -31,6 +32,7 @@ import { QueryTransactionV1Service } from './services/query-transaction-v1.servi
         ]),
         forwardRef(() => QueueModule),
         ProjectModule,
+        SlackModule,
     ],
     controllers: [
         QueryTransactionV1Controller,
