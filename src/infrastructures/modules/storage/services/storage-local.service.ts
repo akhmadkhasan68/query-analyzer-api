@@ -100,4 +100,20 @@ export class StorageLocalService implements IStorageDriverService {
             throw new Error(errorMessage);
         }
     }
+
+    async getFileBuffer(filePath: string): Promise<Buffer> {
+        try {
+            const fullPath = path.resolve(filePath);
+            if (!fs.existsSync(fullPath)) {
+                this.logger.warn(`File not found: ${fullPath}`);
+                throw new Error(`File not found: ${fullPath}`);
+            }
+
+            return fs.readFileSync(fullPath);
+        } catch (error) {
+            const errorMessage = `Error retrieving file buffer: ${error.message}`;
+            this.logger.error(errorMessage);
+            throw new Error(errorMessage);
+        }
+    }
 }

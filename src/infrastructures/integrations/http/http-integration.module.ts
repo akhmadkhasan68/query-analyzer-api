@@ -5,20 +5,27 @@ import {
     AuthorizationType,
     IHttpIntegrationModuleAsyncOptions,
     IHttpIntegrationModuleOptions,
-} from './interfaces/http-integration-options.interface';
+} from './shared/interfaces/http-integration-options.interface';
 
 @Module({})
 export class HttpIntegrationModule {
     static register(
         options: IHttpIntegrationModuleOptions = {},
+        name?: string,
     ): DynamicModule {
         const httpModuleConfig = this.createHttpConfig(options);
+        const providerToken = name ? name : HttpIntegrationV1Service;
 
         return {
             module: HttpIntegrationModule,
             imports: [HttpModule.register(httpModuleConfig)],
-            providers: [HttpIntegrationV1Service],
-            exports: [HttpIntegrationV1Service],
+            providers: [
+                {
+                    provide: providerToken,
+                    useClass: HttpIntegrationV1Service,
+                },
+            ],
+            exports: [providerToken],
         };
     }
 

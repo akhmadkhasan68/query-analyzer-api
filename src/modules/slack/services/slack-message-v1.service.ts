@@ -27,21 +27,6 @@ export class SlackMessageV1Service {
         );
     }
 
-    async sendMessage(dto: SlackPostMessageRequestDto): Promise<void> {
-        try {
-            // Send message to queue
-            await this.queueSlackService.sendToQueue<QueueSlackSendMessageDto>(
-                {
-                    channelId: dto.channel,
-                    blocks: dto.blocks,
-                },
-                QueueSlackJob.SendSlackMessage,
-            );
-        } catch (error) {
-            throw error;
-        }
-    }
-
     async sendMessageToMultipleChannels(
         channelIds: string[],
         blocks: TSlackBlockDto[],
@@ -64,9 +49,42 @@ export class SlackMessageV1Service {
         }
     }
 
+    async sendMessageToChannelInThread(
+        channelId: string,
+        threadTs: string,
+        blocks: TSlackBlockDto[],
+    ): Promise<void> {
+        try {
+            await this.queueSlackService.sendToQueue<QueueSlackSendMessageDto>(
+                {
+                    channelId,
+                    blocks: blocks,
+                    threadTs: threadTs,
+                },
+                QueueSlackJob.SendSlackMessage,
+            );
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async sendMessageToChannel(
+        channelId: string,
+        blocks: TSlackBlockDto[],
+    ): Promise<void> {
+        return this.queueSlackService.sendToQueue<QueueSlackSendMessageDto>(
+            {
+                channelId,
+                blocks: blocks,
+            },
+            QueueSlackJob.SendSlackMessage,
+        );
+    }
+
     async queueProcessSendMessage(
         channelId: string,
         blocks: TSlackBlockDto[],
+        threadTs?: string,
     ): Promise<void> {
         this.logger.log(
             `Processing send slack message to channel: ${channelId}`,
@@ -75,7 +93,7 @@ export class SlackMessageV1Service {
         try {
             await this.httpService.post<SlackPostMessageRequestDto, any>(
                 SlackRouteConstant.chatPostMessage,
-                { channel: channelId, blocks: blocks },
+                new SlackPostMessageRequestDto(channelId, blocks, threadTs),
             );
         } catch (error) {
             this.logger.error(

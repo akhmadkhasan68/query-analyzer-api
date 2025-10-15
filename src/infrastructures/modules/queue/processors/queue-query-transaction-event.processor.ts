@@ -46,6 +46,8 @@ export class QueueQueryTransactionEventProcessor extends WorkerHost {
                     await this.queryTransactionEventService.queueProcessAIAnalyze(
                         data,
                     );
+
+                    break;
                 }
                 default:
                     throw new Error(`Unknown job name: ${jobName}`);

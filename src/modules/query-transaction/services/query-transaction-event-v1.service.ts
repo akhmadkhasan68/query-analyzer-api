@@ -1,4 +1,6 @@
 import {
+    forwardRef,
+    Inject,
     Injectable,
     Logger,
     NotFoundException,
@@ -7,6 +9,7 @@ import {
 import { randomUUID } from 'crypto';
 import { IProjectKey } from 'src/infrastructures/databases/entities/interfaces/project-key.interface';
 import { IProject } from 'src/infrastructures/databases/entities/interfaces/project.interface';
+import { IQueryTransactionEventAnalyzeReport } from 'src/infrastructures/databases/schema/interfaces/query-transaction-event-analyze-report.interface';
 import {
     IQueryTransactionEvent,
     IQueryTransactionEventExecutionPlanFormat,
@@ -20,16 +23,22 @@ import { QueueQueryTransactionEventSendAiAnalysisEventDto } from 'src/infrastruc
 import { QueueQueryTransactionEventDto } from 'src/infrastructures/modules/queue/dtos/queue-query-transaction-event.dto';
 import { IQueueService } from 'src/infrastructures/modules/queue/interfaces/queue-service.interface';
 import { QueueFactoryService } from 'src/infrastructures/modules/queue/services/queue-factory.service';
+import { N8nWebhookV1Service } from 'src/modules/n8n/services/n8n-webhook-v1.service';
+import { N8nWebhookIdEnum } from 'src/modules/n8n/shared/enums/n8n-webhook-id.enum';
 import { ProjectKeyV1Repository } from 'src/modules/project/repositories/project-key-v1.repository';
+import { ProjectSlackChannelV1Repository } from 'src/modules/project/repositories/project-slack-channel-v1.repository';
 import { ProjectV1Repository } from 'src/modules/project/repositories/project-v1.repository';
 import { SlackMessageV1Service } from 'src/modules/slack/services/slack-message-v1.service';
 import { SlackMessageTemplateHelper } from 'src/modules/slack/shared/helpers/slack-message-template.helper';
+import { StorageFileV1Repository } from 'src/modules/storage-file/repositories/storage-file-v1.repository';
+import { StorageFileV1Service } from 'src/modules/storage-file/services/storage-file-v1.service';
 import { ERROR_MESSAGE_CONSTANT } from 'src/shared/constants/error-message.constant';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { HashUtil } from 'src/shared/utils/hash.util';
 import { QueryTransactionEventAiAnalyzeV1Request } from '../dtos/requests/query-transaction-event-ai-analyze.request';
 import { QueryTransactionEventCaptureV1Request } from '../dtos/requests/query-transaction-event-capture-v1.request';
 import { QueryTransactionEventPaginationV1Request } from '../dtos/requests/query-transaction-event-paginate-v1.request';
+import { QueryTransactionEventAnalyzeReportV1Repository } from '../repositories/query-transaction-event-analyze-report-v1.repository';
 import { QueryTransactionEventV1Repository } from '../repositories/query-transaction-event-v1.repository';
 import { QueryTransactionV1Repository } from '../repositories/query-transaction-v1.repository';
 import { QueryTransactionSeverityEnum } from '../shared/enums/query-transaction-severity.enum';
@@ -46,11 +55,17 @@ export class QueryTransactionEventV1Service {
     constructor(
         private readonly queryTransactionRepository: QueryTransactionV1Repository,
         private readonly queryTransactionEventRepository: QueryTransactionEventV1Repository,
+        private readonly queryTransactionEventAnalyzeReportV1Repository: QueryTransactionEventAnalyzeReportV1Repository,
         private readonly projectRepository: ProjectV1Repository,
         private readonly projectKeyRepository: ProjectKeyV1Repository,
+        private readonly projectSlackChannelV1Repository: ProjectSlackChannelV1Repository,
         private readonly queueFactoryService: QueueFactoryService,
         private readonly queryTransactionV1Service: QueryTransactionV1Service,
         private readonly slackMessageService: SlackMessageV1Service,
+        @Inject(forwardRef(() => N8nWebhookV1Service))
+        private readonly n8nWebhookService: N8nWebhookV1Service,
+        private readonly storageFileV1Repository: StorageFileV1Repository,
+        private readonly storageFileService: StorageFileV1Service,
     ) {
         this.queueQueryTransactionEventService =
             this.queueFactoryService.createQueueService(
@@ -64,6 +79,68 @@ export class QueryTransactionEventV1Service {
         return await this.queryTransactionEventRepository.paginate(
             paginationDto,
         );
+    }
+
+    async findOneByQueryId(queryId: string): Promise<IQueryTransactionEvent> {
+        const event =
+            await this.queryTransactionEventRepository.findOneByQueryIdOrFail(
+                queryId,
+            );
+
+        return event;
+    }
+
+    async notifyEvent(queryIds: string[]): Promise<void> {
+        const events =
+            await this.queryTransactionEventRepository.findByQueryIds(queryIds);
+
+        if (events.length !== queryIds.length) {
+            const notFoundIds = queryIds.filter(
+                (id) => !events.find((event) => event.queryId === id),
+            );
+
+            this.logger.warn(
+                `Some query IDs not found: ${notFoundIds.join(', ')}`,
+            );
+
+            throw new NotFoundException(
+                ERROR_MESSAGE_CONSTANT.DataIdsNotFound(notFoundIds),
+            );
+        }
+
+        const projectIds = events.map((event) => event.project.id);
+        const uniqueProjectIds = Array.from(new Set(projectIds));
+
+        const projectSlackChannels =
+            await this.projectSlackChannelV1Repository.findByProjectIds(
+                uniqueProjectIds,
+            );
+
+        for (const event of events) {
+            try {
+                // Send Slack notification for query transaction event alert
+                const projectChannels = projectSlackChannels.filter(
+                    (channel) => channel.projectId === event.project.id,
+                );
+
+                if (projectChannels && projectChannels.length > 0) {
+                    await this.slackMessageService.sendMessageToMultipleChannels(
+                        projectChannels.map(
+                            (channel) => channel.slackChannelId,
+                        ),
+                        SlackMessageTemplateHelper.queryTransactionEventAlert(
+                            event.project,
+                            event,
+                        ),
+                    );
+                }
+            } catch (error) {
+                // Log error but do not fail the main process
+                this.logger.error(
+                    `Failed to send Slack notification for event ID ${event.id}: ${error.message}`,
+                );
+            }
+        }
     }
 
     async captureEvent(
@@ -238,21 +315,171 @@ export class QueryTransactionEventV1Service {
             );
         }
 
-        for (const event of events) {
-            await this.queueQueryTransactionEventService.sendToQueue<QueueQueryTransactionEventSendAiAnalysisEventDto>(
-                event,
-                QueueQueryTransactionEventJob.SendAIAnalysisEvent,
+        // check if this event is already being analyzed
+        const eventAnalyzeReport =
+            await this.queryTransactionEventAnalyzeReportV1Repository.findByQueryTransactionEventIds(
+                request.ids,
+            );
+        const alreadyAnalyzedEventIds = eventAnalyzeReport.map(
+            (report) => report.queryTransactionEventId,
+        );
+
+        if (eventAnalyzeReport.length > 0) {
+            const sendMessagePromises = eventAnalyzeReport.map(
+                async (report) => {
+                    this.sendAIAnalyzeReportToRequester(
+                        report.queryTransactionEventId,
+                        report,
+                        request.slackUserId,
+                        request.slackChannelId,
+                        request.slackMessageTs,
+                    );
+                },
+            );
+
+            await Promise.all(sendMessagePromises);
+        }
+
+        const eventsToAnalyze = events.filter(
+            (event) => !alreadyAnalyzedEventIds.includes(event.id),
+        );
+        if (eventsToAnalyze.length > 0) {
+            const sendToQueuePromises = eventsToAnalyze.map((event) =>
+                this.queueQueryTransactionEventService.sendToQueue<QueueQueryTransactionEventSendAiAnalysisEventDto>(
+                    {
+                        id: event.id,
+                        slackChannelId: request.slackChannelId,
+                        slackUserId: request.slackUserId,
+                        slackMessageTs: request.slackMessageTs,
+                    },
+                    QueueQueryTransactionEventJob.SendAIAnalysisEvent,
+                ),
+            );
+
+            await Promise.all(sendToQueuePromises);
+
+            this.logger.log(
+                `Queued ${eventsToAnalyze.length} events for AI analysis.`,
             );
         }
     }
 
     async queueProcessAIAnalyze(
-        _event: QueueQueryTransactionEventSendAiAnalysisEventDto,
+        data: QueueQueryTransactionEventSendAiAnalysisEventDto,
     ): Promise<void> {
+        const { slackChannelId, slackUserId, slackMessageTs, id } = data;
+
         try {
-            // TODO: implement AI analyze process result
+            await this.n8nWebhookService.triggerWebhook(
+                N8nWebhookIdEnum.AiAnalyzeQueryTransactionEvent,
+                {
+                    id: id,
+                    slackUserId: slackUserId,
+                    slackChannelId: slackChannelId,
+                    slackMessageTs: slackMessageTs,
+                },
+            );
         } catch (error) {
+            this.logger.error(
+                `Error occurred while triggering N8N webhook for AI analysis: ${error.message}`,
+            );
+
             throw error;
+        }
+    }
+
+    async saveAIAnalyzeReport(
+        queryTransactionEventId: string,
+        fileStorageId: string,
+    ): Promise<IQueryTransactionEventAnalyzeReport> {
+        const existingReport =
+            await this.queryTransactionEventAnalyzeReportV1Repository.findOneByQueryTransactionEventId(
+                queryTransactionEventId,
+            );
+
+        const storageFile =
+            await this.storageFileV1Repository.findOneByIdOrFail(fileStorageId);
+
+        if (!existingReport) {
+            // Create new report
+            const newReport: IQueryTransactionEventAnalyzeReport = {
+                id: randomUUID(),
+                queryTransactionEventId: queryTransactionEventId,
+                storageFile: storageFile,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            return await this.queryTransactionEventAnalyzeReportV1Repository.create(
+                newReport,
+            );
+        }
+
+        return existingReport;
+    }
+
+    async sendAIAnalyzeReportToRequester(
+        queryTransactionEventId: string,
+        queryTransactionEventAnalyzeReport: IQueryTransactionEventAnalyzeReport,
+        slackUserId: string,
+        slackChannelId: string,
+        slackMessageTs?: string,
+    ): Promise<void> {
+        const event =
+            await this.queryTransactionEventRepository.findOneByIdOrFail(
+                queryTransactionEventId,
+            );
+
+        // File Url
+        const fileUrl = await this.storageFileService.getFileUrl(
+            queryTransactionEventAnalyzeReport.storageFile.id,
+        );
+
+        if (
+            !event.project.projectSlackChannels ||
+            event.project.projectSlackChannels.length === 0
+        ) {
+            this.logger.warn(
+                `No Slack channels configured for project ${event.project.name} (${event.project.id})`,
+            );
+            return;
+        }
+
+        // If specific slack channel is provided, use it; otherwise, use all project channels
+        const targetChannels = slackChannelId
+            ? [slackChannelId]
+            : event.project.projectSlackChannels.map(
+                  (channel) => channel.slackChannelId,
+              );
+
+        for (const channelId of targetChannels) {
+            try {
+                if (slackMessageTs) {
+                    // Reply in thread if slackMessageTs is provided
+                    await this.slackMessageService.sendMessageToChannelInThread(
+                        channelId,
+                        slackMessageTs,
+                        SlackMessageTemplateHelper.queryTransactionEventAiAnalyzeReport(
+                            slackUserId,
+                            fileUrl,
+                        ),
+                    );
+                } else {
+                    // Send as new message if slackMessageTs is not provided
+                    await this.slackMessageService.sendMessageToChannel(
+                        channelId,
+                        SlackMessageTemplateHelper.queryTransactionEventAiAnalyzeReport(
+                            slackUserId,
+                            fileUrl,
+                        ),
+                    );
+                }
+            } catch (error) {
+                // Log error but do not fail the main process
+                this.logger.error(
+                    `Failed to send AI analyze report to Slack channel ${channelId}: ${error.message}`,
+                );
+            }
         }
     }
 

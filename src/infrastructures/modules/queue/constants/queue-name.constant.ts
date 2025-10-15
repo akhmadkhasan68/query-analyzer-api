@@ -15,6 +15,8 @@ export type TQueueMailJob = (typeof QueueMailJob)[keyof typeof QueueMailJob];
 export const QueueQueryTransactionEventJob = {
     SendQueryTransactionEvent: 'send-query-transaction-event',
     SendAIAnalysisEvent: 'send-ai-analysis-event',
+    SendAIAnalysisQueryTransactionEventWithNotify:
+        'send-ai-analysis-query-transaction-event-with-notify',
 } as const;
 
 export type TQueueQueryTransactionEventJob =

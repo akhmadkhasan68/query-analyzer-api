@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Scope, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import { config } from 'src/config';
@@ -13,7 +13,7 @@ import { IAuthResultData } from '../shared/interfaces/auth-result-data.interface
 import { IJwtPayload } from '../shared/interfaces/jwt-payload.interface';
 import { IJwtRefreshPayload } from '../shared/interfaces/jwt-refresh-payload.interface';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class IamAuthV1Service {
     constructor(
         private readonly jwtService: JwtService,

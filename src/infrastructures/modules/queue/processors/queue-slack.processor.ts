@@ -16,12 +16,13 @@ export class QueueSlackProcessor extends WorkerHost {
 
             switch (jobName) {
                 case QueueSlackJob.SendSlackMessage: {
-                    const { channelId, blocks } =
+                    const { channelId, blocks, threadTs } =
                         job.data as QueueSlackSendMessageDto;
 
                     await this.slackMessageService.queueProcessSendMessage(
                         channelId,
                         blocks,
+                        threadTs,
                     );
 
                     break;

@@ -1,7 +1,7 @@
 import { ZodUtils } from 'src/shared/utils/zod.util';
 import { z } from 'zod';
 
-export const SlackCommandHandleCommandV1Schema = z.object({
+export const SlackHandleCommandPayloadV1Schema = z.object({
     token: z.string(),
     teamId: z.string(),
     teamDomain: z.string(),
@@ -17,6 +17,6 @@ export const SlackCommandHandleCommandV1Schema = z.object({
     triggerId: z.string(),
 });
 
-export class SlackCommandHandleCommandV1Request extends ZodUtils.createCamelCaseDto(
-    SlackCommandHandleCommandV1Schema,
+export class SlackHandleCommandPayloadV1Request extends ZodUtils.createCamelCaseDto(
+    SlackHandleCommandPayloadV1Schema,
 ) {}

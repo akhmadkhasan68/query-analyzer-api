@@ -110,13 +110,43 @@ export class QueryTransactionEventV1Repository {
         );
     }
 
-    async findById(id: string): Promise<IQueryTransactionEvent | null> {
+    async findByQueryIds(
+        queryIds: string[],
+    ): Promise<IQueryTransactionEvent[]> {
+        return this.queryTransactionEventModel
+            .find({ queryId: { $in: queryIds } })
+            .exec();
+    }
+
+    async findOneById(id: string): Promise<IQueryTransactionEvent | null> {
         return this.queryTransactionEventModel.findById(id).exec();
     }
 
-    async findByIdOrFail(id: string): Promise<IQueryTransactionEvent> {
+    async findOneByIdOrFail(id: string): Promise<IQueryTransactionEvent> {
         const result = await this.queryTransactionEventModel
             .findById(id)
+            .exec();
+
+        if (!result) {
+            throw new DataNotFoundException();
+        }
+
+        return result;
+    }
+
+    async findOneByQueryId(
+        queryId: string,
+    ): Promise<IQueryTransactionEvent | null> {
+        return this.queryTransactionEventModel
+            .findOne({ queryId: queryId })
+            .exec();
+    }
+
+    async findOneByQueryIdOrFail(
+        queryId: string,
+    ): Promise<IQueryTransactionEvent> {
+        const result = await this.queryTransactionEventModel
+            .findOne({ queryId: queryId })
             .exec();
 
         if (!result) {

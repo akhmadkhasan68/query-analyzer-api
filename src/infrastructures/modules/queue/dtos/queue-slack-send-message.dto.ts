@@ -3,4 +3,5 @@ import { TSlackBlockDto } from 'src/modules/slack/shared/dtos/requests/slack-pos
 export class QueueSlackSendMessageDto {
     channelId: string;
     blocks: TSlackBlockDto[];
+    threadTs?: string;
 }

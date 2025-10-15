@@ -1,3 +1,6 @@
-import { QueryTransactionEvent } from 'src/infrastructures/databases/schema/query-transaction-event.schema';
-
-export class QueueQueryTransactionEventSendAiAnalysisEventDto extends QueryTransactionEvent {}
+export class QueueQueryTransactionEventSendAiAnalysisEventDto {
+    id: string;
+    slackUserId: string;
+    slackChannelId: string;
+    slackMessageTs?: string;
+}

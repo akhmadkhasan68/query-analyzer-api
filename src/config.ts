@@ -11,6 +11,15 @@ export const config = {
         debug: process.env.APP_DEBUG === 'true',
         port: +(process.env.APP_PORT ?? 3000),
         tz: process.env.APP_TZ ?? 'UTC',
+        isDevelopment: ((): boolean => {
+            const env = process.env.APP_ENV ?? 'development';
+            return env === 'development' || env === 'local';
+        })(),
+        isProduction: ((): boolean => {
+            const env = process.env.APP_ENV ?? 'development';
+            return env === 'production';
+        })(),
+        url: process.env.APP_URL ?? 'http://localhost',
     },
     db: {
         host: process.env.DB_HOST ?? '127.0.0.1',
@@ -92,6 +101,12 @@ export const config = {
     },
     slack: {
         baseUrl: process.env.SLACK_BASE_URL || 'https://slack.com/api',
+        webhookBaseUrl:
+            process.env.SLACK_WEBHOOK_BASE_URL || 'https://hooks.slack.com',
         botOAuthToken: process.env.SLACK_BOT_OAUTH_TOKEN || '',
+    },
+    n8n: {
+        baseUrl: process.env.N8N_BASE_URL || 'http://localhost:5678',
+        apiKey: process.env.N8N_API_KEY || '',
     },
 } as const;

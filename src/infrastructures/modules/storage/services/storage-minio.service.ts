@@ -137,4 +137,41 @@ export class StorageMinioService implements IStorageDriverService {
             throw new Error(errorMessage);
         }
     }
+
+    async getFileBuffer(filePath: string): Promise<Buffer> {
+        try {
+            const bucketName = config.storage.minio.bucketName;
+
+            // Check if the bucket exists
+            const bucketExists =
+                await this.minioClient.bucketExists(bucketName);
+            if (!bucketExists) {
+                this.logger.warn(
+                    `Bucket ${bucketName} does not exist. Cannot get file buffer.`,
+                );
+                throw new Error(`Bucket ${bucketName} does not exist.`);
+            }
+
+            // Get the file stream from Minio
+            const stream = await this.minioClient.getObject(
+                bucketName,
+                filePath,
+            );
+
+            return new Promise<Buffer>((resolve, reject) => {
+                const chunks: Buffer[] = [];
+                stream.on('data', (chunk) => chunks.push(chunk));
+                stream.on('end', () => resolve(Buffer.concat(chunks)));
+                stream.on('error', (err) => {
+                    const errorMessage = `Error retrieving file buffer from Minio: ${err.message}`;
+                    this.logger.error(errorMessage);
+                    reject(new Error(errorMessage));
+                });
+            });
+        } catch (error) {
+            const errorMessage = `Error getting file buffer from Minio: ${error.message}`;
+            this.logger.error(errorMessage);
+            throw new Error(errorMessage);
+        }
+    }
 }

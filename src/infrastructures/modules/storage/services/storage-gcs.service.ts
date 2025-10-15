@@ -106,4 +106,27 @@ export class StorageGcsService implements IStorageDriverService {
             );
         }
     }
+
+    async getFileBuffer(filePath: string): Promise<Buffer> {
+        try {
+            const file = this.bucket.file(filePath);
+
+            // Check if the file exists
+            const [exists] = await file.exists();
+            if (!exists) {
+                this.logger.warn(`File not found in GCS: ${filePath}`);
+                throw new Error(`File not found: ${filePath}`);
+            }
+
+            const [contents] = await file.download();
+            return contents;
+        } catch (error) {
+            this.logger.error(
+                `Failed to retrieve file buffer from GCS: ${error.message}`,
+            );
+            throw new Error(
+                `Error retrieving file buffer from GCS: ${error.message}`,
+            );
+        }
+    }
 }

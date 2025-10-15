@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IProjectSlackChannel } from 'src/infrastructures/databases/entities/interfaces/project-slack-channel.interface';
 import { ProjectSlackChannel } from 'src/infrastructures/databases/entities/project-slack-channel.entity';
-import { QueryRunner, Repository } from 'typeorm';
+import { In, QueryRunner, Repository } from 'typeorm';
 
 @Injectable()
 export class ProjectSlackChannelV1Repository extends Repository<ProjectSlackChannel> {
@@ -11,6 +11,16 @@ export class ProjectSlackChannelV1Repository extends Repository<ProjectSlackChan
         private readonly repo: Repository<IProjectSlackChannel>,
     ) {
         super(repo.target, repo.manager, repo.queryRunner);
+    }
+
+    async findByProjectIds(
+        projectIds: string[],
+    ): Promise<IProjectSlackChannel[]> {
+        return this.find({
+            where: {
+                projectId: In(projectIds),
+            },
+        });
     }
 
     async saveWithTransaction(

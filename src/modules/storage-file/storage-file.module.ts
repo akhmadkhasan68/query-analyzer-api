@@ -8,8 +8,8 @@ import { StorageFileV1Service } from './services/storage-file-v1.service';
 
 @Module({
     imports: [StorageModule, TypeOrmModule.forFeature([StorageFile])],
-    providers: [StorageFileV1Service, StorageFileV1Repository],
     controllers: [StorageFileV1Controller],
-    exports: [],
+    providers: [StorageFileV1Service, StorageFileV1Repository],
+    exports: [StorageFileV1Repository, StorageFileV1Service],
 })
 export class StorageFileModule {}

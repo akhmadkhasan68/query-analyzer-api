@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { config } from 'src/config';
 import { IStorageFile } from 'src/infrastructures/databases/entities/interfaces/storage-file.interface';
 import { StorageFactoryService } from 'src/infrastructures/modules/storage/services/storage-factory.service';
@@ -12,6 +12,8 @@ export class StorageFileV1Service {
         public readonly storageFactoryService: StorageFactoryService,
         private readonly storageFileV1Repository: StorageFileV1Repository,
     ) {}
+
+    private readonly logger = new Logger(StorageFileV1Service.name);
 
     /**
      * Uploads a file using the storage service.
@@ -36,7 +38,9 @@ export class StorageFileV1Service {
             await this.storageFileV1Repository.save(result);
 
             return result;
-        } catch (_error) {
+        } catch (error) {
+            this.logger.error('File upload failed', error);
+
             throw new Error(ERROR_MESSAGE_CONSTANT.FileUpload);
         }
     }
@@ -47,6 +51,26 @@ export class StorageFileV1Service {
         });
 
         return storagFile;
+    }
+
+    async getFileBuffer(id: string): Promise<Buffer> {
+        const storagFile = await this.storageFileV1Repository.findOneOrFail({
+            where: { id },
+        });
+
+        return this.storageFactoryService
+            .setStorageDriverService(storagFile.driver)
+            .getFileBuffer(storagFile.path);
+    }
+
+    async getFileUrl(id: string): Promise<string> {
+        const storageFile = await this.storageFileV1Repository.findOneOrFail({
+            where: { id },
+        });
+
+        return this.storageFactoryService
+            .setStorageDriverService(storageFile.driver)
+            .getFileUrl(storageFile.path);
     }
 
     /**

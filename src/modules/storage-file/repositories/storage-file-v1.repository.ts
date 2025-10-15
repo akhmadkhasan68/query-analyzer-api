@@ -12,4 +12,8 @@ export class StorageFileV1Repository extends Repository<IStorageFile> {
     ) {
         super(repository.target, repository.manager, repository.queryRunner);
     }
+
+    async findOneByIdOrFail(id: string): Promise<IStorageFile> {
+        return this.repository.findOneOrFail({ where: { id } });
+    }
 }

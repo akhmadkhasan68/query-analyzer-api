@@ -158,7 +158,7 @@ export class StringUtil {
     }
 
     static truncateText(text: string, maxLength = 3000): string {
-        if (text.length <= maxLength) {
+        if (text.length < maxLength) {
             return text;
         }
         return text.substring(0, maxLength - 3) + '...';

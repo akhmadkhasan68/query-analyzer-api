@@ -20,7 +20,7 @@ export class SlackMessageTemplateHelper {
             type: 'header',
             text: {
                 type: 'plain_text',
-                text: ':alert: Slow Query Detected :alert:',
+                text: `${SlackMessageFormatHelper.Emoji('alert')} Slow Query Detected ${SlackMessageFormatHelper.Emoji('alert')}`,
                 emoji: true,
             },
         });
@@ -79,7 +79,7 @@ export class SlackMessageTemplateHelper {
         // Query Section
         const textSectionQuery = [
             `${SlackMessageFormatHelper.Bold('Query:')}`,
-            `${StringUtil.truncateText(SlackMessageFormatHelper.CodeBlock(event.rawQuery))}`,
+            `${SlackMessageFormatHelper.CodeBlock(StringUtil.truncateText(event.rawQuery, 1500))}`,
         ].join('\n');
 
         messages.push({
@@ -94,7 +94,7 @@ export class SlackMessageTemplateHelper {
             const textSectionStackTraces = [
                 `${SlackMessageFormatHelper.Bold('Stack Traces:')}`,
                 `${SlackMessageFormatHelper.CodeBlock(
-                    event.stackTraces.join('\n'),
+                    StringUtil.truncateText(event.stackTraces.join('\n')),
                 )}`,
             ].join('\n');
 
@@ -102,7 +102,7 @@ export class SlackMessageTemplateHelper {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: StringUtil.truncateText(textSectionStackTraces),
+                    text: textSectionStackTraces,
                 },
             });
         }
@@ -127,6 +127,72 @@ export class SlackMessageTemplateHelper {
         messages.push({
             type: 'actions',
             elements: [
+                // {
+                //     type: 'button',
+                //     text: {
+                //         type: 'plain_text',
+                //         text: `${SlackMessageFormatHelper.Emoji('eye')} View Details`,
+                //         emoji: true,
+                //     },
+                //     style: 'primary',
+                //     action_id: 'btn-view-details',
+                //     value: event.queryId,
+                // },
+                {
+                    type: 'button',
+                    text: {
+                        type: 'plain_text',
+                        text: `${SlackMessageFormatHelper.Emoji('robot_face')} AI Analyze`,
+                        emoji: true,
+                    },
+                    style: 'primary',
+                    action_id: 'btn-ai-analyze-query-event',
+                    value: event.queryId,
+                },
+            ],
+        });
+
+        return messages;
+    }
+
+    static queryTransactionEventAiAnalyzeReport(
+        slackUserId: string,
+        fileUrl: string,
+    ): TSlackBlockDto[] {
+        const messages: TSlackBlockDto[] = [];
+
+        // Header
+        messages.push({
+            type: 'header',
+            text: {
+                type: 'plain_text',
+                text: `${SlackMessageFormatHelper.Emoji('robot_face')} AI Analysis Report ${SlackMessageFormatHelper.Emoji('robot_face')}`,
+                emoji: true,
+            },
+        });
+
+        // Divider
+        messages.push({
+            type: 'divider',
+        });
+
+        // Intro Section
+        const textSectionIntro = [
+            `${SlackMessageFormatHelper.Bold('Hello')} <@${slackUserId}>, the AI analysis for this query event is complete. Please review the summary and recommendations below with click the button to view more details. The URL button will be active for 24 hours.`,
+        ].join('\n');
+
+        messages.push({
+            type: 'section',
+            text: {
+                type: 'mrkdwn',
+                text: textSectionIntro,
+            },
+        });
+
+        // Cta Section
+        messages.push({
+            type: 'actions',
+            elements: [
                 {
                     type: 'button',
                     text: {
@@ -134,17 +200,8 @@ export class SlackMessageTemplateHelper {
                         text: `${SlackMessageFormatHelper.Emoji('eye')} View Details`,
                         emoji: true,
                     },
-                    url: 'https://app.queryanalyzer.com/', //TODO: Implement AI Analyze functionality
                     style: 'primary',
-                },
-                {
-                    type: 'button',
-                    text: {
-                        type: 'plain_text',
-                        text: `${SlackMessageFormatHelper.Emoji('mag')} AI Analyze`,
-                        emoji: true,
-                    },
-                    url: 'https://app.queryanalyzer.com/', //TODO: Implement AI Analyze functionality
+                    url: fileUrl,
                 },
             ],
         });

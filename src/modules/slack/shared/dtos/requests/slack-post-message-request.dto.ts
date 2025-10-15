@@ -48,9 +48,11 @@ export type TSlackBlockDto =
 export class SlackPostMessageRequestDto {
     public channel: string;
     public blocks: TSlackBlockDto[];
+    public thread_ts?: string;
 
-    constructor(channel: string, blocks: TSlackBlockDto[]) {
+    constructor(channel: string, blocks: TSlackBlockDto[], threadTs?: string) {
         this.channel = channel;
         this.blocks = blocks;
+        this.thread_ts = threadTs;
     }
 }

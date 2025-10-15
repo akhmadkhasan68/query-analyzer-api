@@ -69,6 +69,19 @@ export class FileUtil {
      * @type {string[]}
      * @public
      * @description
+     * This list is used to validate if a file is a text file based on its MIME type.
+     * It can be extended to include more text file types as needed.
+     */
+    static textMimeTypes: string[] = [
+        'text/plain',
+        'text/csv',
+        'text/markdown',
+    ];
+
+    /**
+     * @type {string[]}
+     * @public
+     * @description
      * This list is used to validate if a file is a valid type (image, video, audio, or document)
      * based on its MIME type. It combines all the individual MIME type arrays
      * to provide a comprehensive list of valid file types.
@@ -84,6 +97,7 @@ export class FileUtil {
         ...this.videoMimeTypes,
         ...this.audioMimeTypes,
         ...this.documentMimeTypes,
+        ...this.textMimeTypes,
     ];
 
     /**
@@ -141,6 +155,16 @@ export class FileUtil {
     }
 
     /**
+     *
+     * Validates if the provided file is a text file based on its MIME type.
+     * @param mimeType - The MIME type of the file.
+     * @returns True if the file is a text file, false otherwise.
+     */
+    static isText(mimeType: string): boolean {
+        return this.textMimeTypes.includes(mimeType);
+    }
+
+    /**
      * Validates if the provided file is a valid type (image, video, audio, or document).
      * @param mimeType - The MIME type of the file.
      * @returns True if the file is a valid type, false otherwise.
@@ -150,7 +174,8 @@ export class FileUtil {
             this.isImage(mimeType) ||
             this.isVideo(mimeType) ||
             this.isAudio(mimeType) ||
-            this.isDocument(mimeType)
+            this.isDocument(mimeType) ||
+            this.isText(mimeType)
         );
     }
 
