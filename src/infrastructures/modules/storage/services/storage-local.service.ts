@@ -83,7 +83,7 @@ export class StorageLocalService implements IStorageDriverService {
         }
     }
 
-    async getFileUrl(filePath: string): Promise<string> {
+    async getFileUrl(filePath: string, contentType?: string): Promise<string> {
         try {
             // For local storage, the URL is the file path
             const fullPath = path.resolve(filePath);

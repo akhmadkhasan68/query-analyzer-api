@@ -109,7 +109,7 @@ export class StorageMinioService implements IStorageDriverService {
         }
     }
 
-    async getFileUrl(filePath: string): Promise<string> {
+    async getFileUrl(filePath: string, contentType?: string): Promise<string> {
         try {
             const bucketName = config.storage.minio.bucketName;
 
@@ -123,11 +123,31 @@ export class StorageMinioService implements IStorageDriverService {
                 throw new Error(`Bucket ${bucketName} does not exist.`);
             }
 
+            const isDirectDownload = true; // TODO: make this configurable
+            let reqParams = {};
+            if (isDirectDownload) {
+                reqParams = {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    'response-content-disposition': `attachment; filename="${filePath}"`,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    'response-content-type':
+                        contentType || 'application/octet-stream',
+                };
+            } else {
+                reqParams = {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    'response-content-type':
+                        contentType || 'application/octet-stream',
+                };
+            }
+
             // Generate a presigned URL for the file
-            const url = await this.minioClient.presignedGetObject(
+            const url = await this.minioClient.presignedUrl(
+                'GET',
                 bucketName,
                 filePath,
                 config.storage.minio.presignExpiresInSeconds,
+                reqParams,
             );
 
             return url;

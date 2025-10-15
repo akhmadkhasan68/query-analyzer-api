@@ -36,7 +36,7 @@ export class StorageFileV1Controller {
         const uploadResult = await this.storageFileService.uploadFile(file);
         const fileUrl = await this.storageFileService.storageFactoryService
             .setStorageDriverService(uploadResult.driver)
-            .getFileUrl(uploadResult.path);
+            .getFileUrl(uploadResult.path, uploadResult.mimetype);
 
         return {
             message: 'File uploaded successfully',
@@ -53,7 +53,7 @@ export class StorageFileV1Controller {
 
         const fileUrl = await this.storageFileService.storageFactoryService
             .setStorageDriverService(file.driver)
-            .getFileUrl(file.path);
+            .getFileUrl(file.path, file.mimetype);
 
         return {
             message: 'File retrieved successfully',

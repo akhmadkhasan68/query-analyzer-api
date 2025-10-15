@@ -82,7 +82,7 @@ export class StorageGcsService implements IStorageDriverService {
         }
     }
 
-    async getFileUrl(filePath: string): Promise<string> {
+    async getFileUrl(filePath: string, contentType?: string): Promise<string> {
         try {
             const file = this.bucket.file(filePath);
 
@@ -92,6 +92,8 @@ export class StorageGcsService implements IStorageDriverService {
                 expires:
                     Date.now() +
                     config.storage.gcs.presignExpiresInSeconds * 1000,
+                responseType: contentType || 'application/octet-stream',
+                responseDisposition: `attachment; filename="${filePath}"`,
             });
 
             this.logger.log(`Generated presigned URL for GCS file: ${url}`);

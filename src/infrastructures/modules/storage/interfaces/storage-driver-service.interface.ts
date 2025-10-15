@@ -27,7 +27,7 @@ export interface IStorageDriverService {
      * @param filePath - The path of the file.
      * @returns A promise that resolves to the URL of the file.
      */
-    getFileUrl(filePath: string): Promise<string>;
+    getFileUrl(filePath: string, contentType?: string): Promise<string>;
 
     /**
      * Retrieves the file as a buffer from the storage system.
