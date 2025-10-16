@@ -30,7 +30,7 @@ build_main:docker_image:
 .deploy:docker_swarm:
   stage: deploy
   image: dotindonesia/ansible:2.13.10
-  tags: [dot]
+  tags: [ansible]
   allow_failure: false
   before_script:
     - chmod 600 $ANSIBLE_KEY_FILE
@@ -53,4 +53,3 @@ include:
       run-on: /^develop$|^staging$|^main$/i
       sonar-project-key: QueryAnalyzerAPI
       sonar-project-name: QueryAnalyzerAPI
-
