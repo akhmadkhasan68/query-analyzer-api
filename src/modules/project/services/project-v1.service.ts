@@ -134,6 +134,17 @@ export class ProjectV1Service {
         }
 
         try {
+            // Delete related project keys, gitlab info, slack channel first
+            await this.projectGitlabV1Repository.deleteByProjectIdsWithTransaction(
+                queryRunner,
+                ids,
+            );
+
+            await this.projectSlackChannelV1Repository.deleteByProjectIdsWithTransaction(
+                queryRunner,
+                ids,
+            );
+
             await this.projectKeyV1Repository.deleteByProjectIdsWithTransaction(
                 queryRunner,
                 ids,

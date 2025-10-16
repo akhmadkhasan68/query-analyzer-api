@@ -29,4 +29,13 @@ export class ProjectSlackChannelV1Repository extends Repository<ProjectSlackChan
     ): Promise<IProjectSlackChannel> {
         return queryRunner.manager.getRepository(this.repo.target).save(entity);
     }
+
+    async deleteByProjectIdsWithTransaction(
+        queryRunner: QueryRunner,
+        projectIds: string[],
+    ): Promise<void> {
+        await queryRunner.manager.getRepository(this.repo.target).delete({
+            projectId: In(projectIds),
+        });
+    }
 }
