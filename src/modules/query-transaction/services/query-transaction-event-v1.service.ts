@@ -530,9 +530,9 @@ export class QueryTransactionEventV1Service {
     private determineSeverity(
         executionTimeMs: number,
     ): QueryTransactionSeverityEnum {
-        const criticalThresholdInMs = 5000; // 5 seconds
-        const highThresholdInMs = 2000; // 2 seconds
-        const mediumThresholdInMs = 1000; // 1 second
+        const criticalThresholdInMs = 2000; // 2 seconds
+        const highThresholdInMs = 1000; // 1 second
+        const mediumThresholdInMs = 500; // 0.5 second
 
         if (executionTimeMs > criticalThresholdInMs) {
             return QueryTransactionSeverityEnum.CRITICAL;

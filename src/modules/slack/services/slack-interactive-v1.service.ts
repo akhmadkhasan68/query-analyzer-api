@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpIntegrationV1Service } from 'src/infrastructures/integrations/http/http-integration-v1.service';
+import { ProjectSlackChannelV1Repository } from 'src/modules/project/repositories/project-slack-channel-v1.repository';
 import { QueryTransactionEventV1Service } from 'src/modules/query-transaction/services/query-transaction-event-v1.service';
 import {
     SlackInteractivePayloadActionDto,
@@ -14,6 +15,7 @@ export class SlackInteractiveV1Service {
     constructor(
         private readonly httpService: HttpIntegrationV1Service,
         private readonly queryTransactionEventService: QueryTransactionEventV1Service,
+        private readonly projectSlackChannelV1Repository: ProjectSlackChannelV1Repository,
     ) {}
 
     private readonly logger = new Logger(SlackInteractiveV1Service.name);
@@ -62,7 +64,10 @@ export class SlackInteractiveV1Service {
                 );
 
             const project = queryTransactionEvent.project;
-            const projectSlackChannels = project.projectSlackChannels || [];
+            const projectSlackChannels =
+                await this.projectSlackChannelV1Repository.findByProjectId(
+                    project.id,
+                );
 
             if (projectSlackChannels.length === 0) {
                 this.logger.warn(

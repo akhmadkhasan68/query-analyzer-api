@@ -23,6 +23,14 @@ export class ProjectSlackChannelV1Repository extends Repository<ProjectSlackChan
         });
     }
 
+    async findByProjectId(projectId: string): Promise<IProjectSlackChannel[]> {
+        return this.find({
+            where: {
+                projectId,
+            },
+        });
+    }
+
     async saveWithTransaction(
         queryRunner: QueryRunner,
         entity: IProjectSlackChannel,
