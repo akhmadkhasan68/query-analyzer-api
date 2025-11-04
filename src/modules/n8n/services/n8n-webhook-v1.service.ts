@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { config } from 'src/config';
 import { HttpIntegrationV1Service } from 'src/infrastructures/integrations/http/http-integration-v1.service';
 import { QueryTransactionEventV1Service } from 'src/modules/query-transaction/services/query-transaction-event-v1.service';
 import { N8nCallbackAiAnalyzeQueryTransactionEventRequest } from '../dtos/requests/n8n-callback-ai-analyze-query-transaction-event.request';
@@ -19,12 +18,7 @@ export class N8nWebhookV1Service {
         webhookId: N8nWebhookIdEnum,
         data: TN8nWebhookDto,
     ): Promise<void> {
-        let url: string;
-        if (!config.app.isDevelopment) {
-            url = `/webhook/${webhookId}`;
-        } else {
-            url = `/webhook-test/${webhookId}`;
-        }
+        const url = `/webhook/${webhookId}`;
 
         this.logger.log(`Triggering webhook: ${url}`);
 
