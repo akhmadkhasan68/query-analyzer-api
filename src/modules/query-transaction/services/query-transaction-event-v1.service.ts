@@ -26,8 +26,11 @@ import { QueueFactoryService } from 'src/infrastructures/modules/queue/services/
 import { N8nWebhookV1Service } from 'src/modules/n8n/services/n8n-webhook-v1.service';
 import { N8nWebhookIdEnum } from 'src/modules/n8n/shared/enums/n8n-webhook-id.enum';
 import { ProjectKeyV1Repository } from 'src/modules/project/repositories/project-key-v1.repository';
+import { ProjectSettingV1Repository } from 'src/modules/project/repositories/project-setting-v1.repository';
 import { ProjectSlackChannelV1Repository } from 'src/modules/project/repositories/project-slack-channel-v1.repository';
 import { ProjectV1Repository } from 'src/modules/project/repositories/project-v1.repository';
+import { ProjectSettingKeyEnum } from 'src/modules/project/shared/enums/project-setting-key.enum';
+import { IProjectSettingKeySeverity } from 'src/modules/project/shared/interfaces/project-setting-key-severity.interface';
 import { SlackMessageV1Service } from 'src/modules/slack/services/slack-message-v1.service';
 import { SlackMessageTemplateHelper } from 'src/modules/slack/shared/helpers/slack-message-template.helper';
 import { StorageFileV1Repository } from 'src/modules/storage-file/repositories/storage-file-v1.repository';
@@ -35,6 +38,7 @@ import { StorageFileV1Service } from 'src/modules/storage-file/services/storage-
 import { ERROR_MESSAGE_CONSTANT } from 'src/shared/constants/error-message.constant';
 import { IPaginateData } from 'src/shared/interfaces/paginate-response.interface';
 import { HashUtil } from 'src/shared/utils/hash.util';
+import { JsonUtil } from 'src/shared/utils/json.util';
 import { QueryTransactionEventAiAnalyzeV1Request } from '../dtos/requests/query-transaction-event-ai-analyze.request';
 import { QueryTransactionEventCaptureV1Request } from '../dtos/requests/query-transaction-event-capture-v1.request';
 import { QueryTransactionEventPaginationV1Request } from '../dtos/requests/query-transaction-event-paginate-v1.request';
@@ -58,6 +62,7 @@ export class QueryTransactionEventV1Service {
         private readonly queryTransactionEventAnalyzeReportV1Repository: QueryTransactionEventAnalyzeReportV1Repository,
         private readonly projectRepository: ProjectV1Repository,
         private readonly projectKeyRepository: ProjectKeyV1Repository,
+        private readonly projectSettingRepository: ProjectSettingV1Repository,
         private readonly projectSlackChannelV1Repository: ProjectSlackChannelV1Repository,
         private readonly queueFactoryService: QueueFactoryService,
         private readonly queryTransactionV1Service: QueryTransactionV1Service,
@@ -186,7 +191,10 @@ export class QueryTransactionEventV1Service {
 
         try {
             // Create Data Query Transaction Event
-            const severity = this.determineSeverity(request.executionTimeMs);
+            const severity = await this.determineSeverity(
+                project,
+                request.executionTimeMs,
+            );
             const eventData: IQueryTransactionEvent = {
                 id: randomUUID(),
                 project: project,
@@ -493,6 +501,7 @@ export class QueryTransactionEventV1Service {
             project.id,
             projectKey.id,
             request.environment,
+            request.rawQuery,
         ];
 
         if (request.stackTrace && request.stackTrace.length > 0) {
@@ -503,45 +512,60 @@ export class QueryTransactionEventV1Service {
             signatureComponents.push(stackTraceString);
         }
 
-        if (
-            typeof request.parameters !== 'undefined' &&
-            request.parameters &&
-            Object.keys(request.parameters).length > 0
-        ) {
-            const paramsString = Object.keys(request.parameters)
-                .sort()
-                .map((key) => {
-                    const value = request.parameters?.[key];
-
-                    if (value) {
-                        return `${key}:${JSON.stringify(value)}`;
-                    }
-                })
-                .filter((item) => item !== undefined)
-                .join('-');
-
-            signatureComponents.push(paramsString);
-        }
-
         return HashUtil.generateSha256Hex(signatureComponents.join('|'));
     }
 
     // TODO: determine severity based on project settings and thresholds
-    private determineSeverity(
+    private async determineSeverity(
+        project: IProject,
         executionTimeMs: number,
-    ): QueryTransactionSeverityEnum {
-        const criticalThresholdInMs = 2000; // 2 seconds
-        const highThresholdInMs = 1000; // 1 second
-        const mediumThresholdInMs = 500; // 0.5 second
+    ): Promise<QueryTransactionSeverityEnum> {
+        const projectSettingSeverity =
+            await this.projectSettingRepository.findOneByProjectIdAndKey(
+                project.id,
+                ProjectSettingKeyEnum.SEVERITY,
+            );
 
-        if (executionTimeMs > criticalThresholdInMs) {
-            return QueryTransactionSeverityEnum.CRITICAL;
-        } else if (executionTimeMs > highThresholdInMs) {
-            return QueryTransactionSeverityEnum.HIGH;
-        } else if (executionTimeMs > mediumThresholdInMs) {
-            return QueryTransactionSeverityEnum.MEDIUM;
-        } else {
-            return QueryTransactionSeverityEnum.LOW;
+        const thresholds: Record<QueryTransactionSeverityEnum, number> = {
+            [QueryTransactionSeverityEnum.CRITICAL]: 2000,
+            [QueryTransactionSeverityEnum.HIGH]: 1000,
+            [QueryTransactionSeverityEnum.MEDIUM]: 500,
+            [QueryTransactionSeverityEnum.LOW]: 0,
+        };
+
+        if (projectSettingSeverity && projectSettingSeverity.values) {
+            const projectSettingSeverities =
+                JsonUtil.parseArray<IProjectSettingKeySeverity>(
+                    projectSettingSeverity.values,
+                );
+
+            if (projectSettingSeverities.length > 0) {
+                for (const setting of projectSettingSeverities) {
+                    thresholds[setting.level] = setting.threshold;
+                }
+
+                this.logger.debug(
+                    `Using custom severity thresholds for project ${project.id}: ${JSON.stringify(
+                        thresholds,
+                    )}`,
+                );
+            }
         }
+
+        if (
+            executionTimeMs >= thresholds[QueryTransactionSeverityEnum.CRITICAL]
+        ) {
+            return QueryTransactionSeverityEnum.CRITICAL;
+        } else if (
+            executionTimeMs >= thresholds[QueryTransactionSeverityEnum.HIGH]
+        ) {
+            return QueryTransactionSeverityEnum.HIGH;
+        } else if (
+            executionTimeMs >= thresholds[QueryTransactionSeverityEnum.MEDIUM]
+        ) {
+            return QueryTransactionSeverityEnum.MEDIUM;
+        }
+
+        return QueryTransactionSeverityEnum.LOW;
     }
 }

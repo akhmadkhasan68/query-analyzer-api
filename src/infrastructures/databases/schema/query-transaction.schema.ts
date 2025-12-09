@@ -22,7 +22,8 @@ export class QueryTransaction extends BaseSchema implements IQueryTransaction {
 
     @Prop({
         type: Object,
-        required: true,
+        required: false,
+        default: {},
     })
     parameters: Record<string, any>;
 

@@ -9,6 +9,21 @@ export class JsonUtil {
         }
     }
 
+    static parseArray<T>(jsonString: string): T[] {
+        try {
+            const parsed = JSON.parse(jsonString);
+            if (Array.isArray(parsed)) {
+                return this.transformObject<T[]>(parsed);
+            } else {
+                console.error('Parsed JSON is not an array');
+                return [];
+            }
+        } catch (error) {
+            console.error('Failed to parse JSON string:', error);
+            return [];
+        }
+    }
+
     /**
      * Transform object by converting snake_case keys to camelCase recursively
      */

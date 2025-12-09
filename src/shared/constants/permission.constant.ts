@@ -16,6 +16,8 @@ export const RESOURCE = {
     LOG_ACTIVITY: 'log-activity',
     PROJECT: 'project',
     PROJECT_KEY: 'project-key',
+    PROJECT_SLACK_CHANNEL: 'project-slack-channel',
+    PROJECT_SETTING: 'project-setting',
 };
 
 export type TResource = (typeof RESOURCE)[keyof typeof RESOURCE];
@@ -54,6 +56,18 @@ export const PERMISSION_RESOURCE_OPERATION: Record<TResource, TOperation[]> = {
     ],
 
     [RESOURCE.PROJECT_KEY]: [
+        OPERATION.VIEW,
+        OPERATION.CREATE,
+        OPERATION.DELETE,
+    ],
+
+    [RESOURCE.PROJECT_SLACK_CHANNEL]: [
+        OPERATION.VIEW,
+        OPERATION.CREATE,
+        OPERATION.DELETE,
+    ],
+
+    [RESOURCE.PROJECT_SETTING]: [
         OPERATION.VIEW,
         OPERATION.CREATE,
         OPERATION.DELETE,

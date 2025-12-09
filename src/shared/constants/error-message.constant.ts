@@ -20,7 +20,8 @@ export const ERROR_MESSAGE_CONSTANT = {
         `Field ${fieldName} has an invalid value${expectedType ? `, expected ${expectedType}` : ''}`,
     QueryError: 'Query Error',
     DataNotFound: 'Data Not Found',
-    FieldDuplicate: 'Field Duplicate',
+    FieldDuplicate: (entity?: string) =>
+        entity ? `Field ${entity} is duplicate` : 'Field is duplicate',
 
     /**
      * Error messages related to file operations
@@ -53,7 +54,7 @@ export const ERROR_MESSAGE_CONSTANT = {
         'Password too weak, must contain at least 1 number and 1 alphabet',
     PasswordTooShort: (length = 8) =>
         `Password must be at least ${length} characters long`,
-    PasswordNotMatch: 'Passwords don\'t match',
+    PasswordNotMatch: "Passwords don't match",
 
     /**
      * Error message related to user phone

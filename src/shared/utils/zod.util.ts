@@ -5,14 +5,16 @@ import { StringUtil } from './string.util';
 
 export class ZodUtils {
     static createCamelCaseDto<T extends z.ZodTypeAny>(schema: T) {
-        return createZodDto(
-            z.preprocess((data) => {
-                if (typeof data === 'object' && data !== null) {
-                    return StringUtil.camelCaseKey(data as Record<string, any>);
-                }
-                return data;
-            }, schema),
-        );
+        // Create the preprocessed schema
+        const preprocessedSchema = z.preprocess((data) => {
+            if (typeof data === 'object' && data !== null) {
+                return StringUtil.camelCaseKey(data as Record<string, any>);
+            }
+            return data;
+        }, schema);
+
+        // Return DTO with inferred type from original schema
+        return createZodDto(preprocessedSchema) as new () => z.infer<T>;
     }
 
     // TODO: Remove this deprecated method
