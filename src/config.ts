@@ -109,4 +109,27 @@ export const config = {
         baseUrl: process.env.N8N_BASE_URL || 'http://localhost:5678',
         apiKey: process.env.N8N_API_KEY || '',
     },
+    sso: {
+        oauth2: {
+            provider: process.env.SSO_OAUTH2_PROVIDER || 'auth0',
+            auth0: {
+                domain: process.env.SSO_OAUTH2_AUTH0_DOMAIN || '',
+                baseUrl: `https://${process.env.SSO_OAUTH2_AUTH0_DOMAIN || ''}`,
+                clientId: process.env.SSO_OAUTH2_AUTH0_CLIENT_ID || '',
+                clientSecret: process.env.SSO_OAUTH2_AUTH0_CLIENT_SECRET || '',
+                callbackURL: process.env.SSO_OAUTH2_AUTH0_CALLBACK_URL || '',
+                wellknownURL: `https://${process.env.SSO_OAUTH2_AUTH0_DOMAIN || ''}/.well-known/openid-configuration`,
+            },
+            google: {
+                authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+                tokenBaseUrl: 'https://oauth2.googleapis.com',
+                userInfoBaseUrl: 'https://www.googleapis.com',
+                clientId: process.env.SSO_OAUTH2_GOOGLE_CLIENT_ID || '',
+                clientSecret: process.env.SSO_OAUTH2_GOOGLE_CLIENT_SECRET || '',
+                callbackURL: process.env.SSO_OAUTH2_GOOGLE_CALLBACK_URL || '',
+            },
+            microsoft: {},
+            gitlab: {},
+        },
+    },
 } as const;

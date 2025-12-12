@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { config } from 'src/config';
 import { IRefreshToken } from 'src/infrastructures/databases/entities/interfaces/refresh-token.interface';
 import { IUser } from 'src/infrastructures/databases/entities/interfaces/user.interface';
+import { Oauth2FactoryService } from 'src/infrastructures/modules/oauth2/services/oauth2-factory.service';
 import { UserV1Repository } from 'src/modules/user/repositories/user-v1.repository';
 import { UserTokenTypeEnum } from 'src/shared/enums/user-token.enum';
 import { DateTimeUtil } from 'src/shared/utils/datetime.util';
@@ -19,6 +20,7 @@ export class IamAuthV1Service {
         private readonly jwtService: JwtService,
         private readonly userV1Repository: UserV1Repository,
         private readonly userTokenV1Repository: UserTokenV1Repository,
+        private readonly oauth2FactoryService: Oauth2FactoryService,
     ) {}
 
     private readonly JWT_SECRET = config.jwt.secret;
@@ -54,6 +56,60 @@ export class IamAuthV1Service {
         const refreshTokenUuid = randomUUID();
 
         // If authentication is successful, generate a JWT token
+        const [token, refreshToken] = await Promise.all([
+            this.generateToken(user),
+            this.generateRefreshToken(refreshTokenUuid),
+        ]);
+
+        // Save the refresh token to the database
+        await this.saveRefreshToken(user, refreshToken, refreshTokenUuid);
+
+        return {
+            user,
+            token: {
+                accessToken: token,
+                accessTokenExpiresIn: DateTimeUtil.addSeconds(
+                    new Date(),
+                    this.JWT_EXPIRES_IN_SECONDS,
+                ),
+                refreshToken: refreshToken,
+                refreshTokenExpiresIn: DateTimeUtil.addSeconds(
+                    new Date(),
+                    this.JWT_REFRESH_TOKEN_EXPIRES_IN_SECONDS,
+                ), // 1 day
+            },
+        };
+    }
+
+    async getOauth2LoginUrl(): Promise<string> {
+        // Get the OAuth2 provider from the factory
+        const oauth2Provider = this.oauth2FactoryService.getProvider();
+
+        // Generate the OAuth2 login URL
+        return await oauth2Provider.getAuthorizationUrl();
+    }
+
+    async oauth2Login(authorizationCode: string): Promise<IAuthResultData> {
+        // Get the OAuth2 provider from the factory
+        const oauth2Provider = this.oauth2FactoryService.getProvider();
+
+        // Authenticate the user with the OAuth2 provider
+        const oauth2Result =
+            await oauth2Provider.authenticate(authorizationCode);
+
+        // Check if the user already exists in the database
+        const user = await this.userV1Repository.findOneByEmail(
+            oauth2Result.userInfo.email,
+        );
+
+        // If the user does not exist, create a new user
+        if (!user) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        const refreshTokenUuid = randomUUID();
+
+        // Generate JWT token and refresh token
         const [token, refreshToken] = await Promise.all([
             this.generateToken(user),
             this.generateRefreshToken(refreshTokenUuid),

@@ -54,7 +54,9 @@ export const ERROR_MESSAGE_CONSTANT = {
         'Password too weak, must contain at least 1 number and 1 alphabet',
     PasswordTooShort: (length = 8) =>
         `Password must be at least ${length} characters long`,
-    PasswordNotMatch: 'Passwords don\'t match',
+    PasswordNotMatch: "Passwords don't match",
+
+    InvalidCredentials: 'Invalid credentials',
 
     /**
      * Error message related to user phone
