@@ -1,0 +1,76 @@
+get:
+    tags:
+        - Storage Files
+    summary: Get file by ID
+    operationId: storageFileGetById
+    security: []
+    parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    responses:
+        '200':
+            description: File details
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/StorageFileV1Response.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+delete:
+    tags:
+        - Storage Files
+    summary: Delete file by ID
+    operationId: storageFileDeleteById
+    security: []
+    parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    responses:
+        '200':
+            description: File deleted
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

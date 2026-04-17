@@ -1,0 +1,31 @@
+post:
+    tags:
+        - Auth
+    summary: Refresh access token
+    operationId: iamAuthRefreshToken
+    security:
+        - RefreshToken: []
+    responses:
+        '200':
+            description: Token refreshed
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/IamAuthV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

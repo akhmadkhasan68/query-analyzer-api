@@ -1,0 +1,15 @@
+{
+    "projectId": "<your_project_id_here>",
+    "personalAccessToken": "<your_personal_access_token_here>",
+    "specPath": "docs/openapi/openapi.bundle.yaml",
+    "remember_options": false,
+    "options": {
+        "endpointBehavior": "OVERWRITE_EXISTING",
+        "schemaBehavior": "OVERWRITE_EXISTING",
+        "deleteUnmatched": false,
+        "updateFolder": false,
+        "prependBasePath": false,
+        "endpointFolderId": 0,
+        "schemaFolderId": 0
+    }
+}

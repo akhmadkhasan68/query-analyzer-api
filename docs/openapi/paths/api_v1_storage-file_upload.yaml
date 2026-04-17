@@ -1,0 +1,43 @@
+post:
+    tags:
+        - Storage Files
+    summary: Upload a file
+    operationId: storageFileUpload
+    security: []
+    requestBody:
+        required: true
+        content:
+            multipart/form-data:
+                schema:
+                    type: object
+                    required:
+                        - file
+                    properties:
+                        file:
+                            type: string
+                            format: binary
+                            description: File to upload
+    responses:
+        '201':
+            description: File uploaded
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/StorageFileV1Response.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

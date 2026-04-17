@@ -1,0 +1,17 @@
+{
+    "mcpServers": {
+        "sentry": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@sentry/mcp-server"
+            ],
+            "env": {
+                "SENTRY_ACCESS_TOKEN": "<ACCESS_TOKEN>",
+                "SENTRY_HOST": "sentry.dot.co.id",
+                "MCP_DISABLE_SKILLS": "seer"
+            }
+        }
+    }
+}

@@ -1,0 +1,6 @@
+name: search
+in: query
+required: false
+schema:
+    type: string
+description: Search keyword to filter results

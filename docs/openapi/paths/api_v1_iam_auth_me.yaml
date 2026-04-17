@@ -1,0 +1,31 @@
+get:
+    tags:
+        - Auth
+    summary: Get current authenticated user
+    operationId: iamAuthMe
+    security:
+        - AccessToken: []
+    responses:
+        '200':
+            description: Current user details
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/UserV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

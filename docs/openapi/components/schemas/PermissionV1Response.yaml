@@ -1,0 +1,24 @@
+type: object
+required:
+    - id
+    - name
+    - slug
+properties:
+    id:
+        type: string
+        format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    name:
+        type: string
+        example: User View
+    slug:
+        type: string
+        example: USER:VIEW
+    description:
+        type: string
+        nullable: true
+        example: Permission to view users
+    resource:
+        $ref: ./ResourceV1Response.yaml
+    operation:
+        $ref: ./OperationV1Response.yaml

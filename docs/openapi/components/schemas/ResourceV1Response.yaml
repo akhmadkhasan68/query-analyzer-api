@@ -1,0 +1,20 @@
+type: object
+required:
+    - id
+    - slug
+    - name
+properties:
+    id:
+        type: string
+        format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    slug:
+        type: string
+        example: USER
+    name:
+        type: string
+        example: User
+    description:
+        type: string
+        nullable: true
+        example: User resource

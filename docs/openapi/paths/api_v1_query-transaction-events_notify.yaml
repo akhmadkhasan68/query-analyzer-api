@@ -1,0 +1,49 @@
+post:
+    tags:
+        - Query Transaction Events
+    summary: Notify about query transaction events
+    operationId: queryTransactionEventNotify
+    security: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - query_ids
+                    properties:
+                        query_ids:
+                            type: array
+                            minItems: 1
+                            items:
+                                type: string
+                                format: uuid
+                            example:
+                                - 660e8400-e29b-41d4-a716-446655440001
+    responses:
+        '200':
+            description: Notification sent
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

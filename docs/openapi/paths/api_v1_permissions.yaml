@@ -1,0 +1,50 @@
+get:
+    tags:
+        - Permissions
+    summary: List permissions (paginated)
+    operationId: permissionList
+    security:
+        - AccessToken: []
+    parameters:
+        - $ref: ../components/parameters/PaginatePage.yaml
+        - $ref: ../components/parameters/PaginatePerPage.yaml
+        - $ref: ../components/parameters/PaginateSort.yaml
+        - $ref: ../components/parameters/PaginateOrder.yaml
+        - $ref: ../components/parameters/PaginateSearch.yaml
+        - name: slug
+          in: query
+          required: false
+          schema:
+              type: string
+          description: Filter by permission slug
+    responses:
+        '200':
+            description: Paginated permissions list
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/PermissionPaginatedResponse.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

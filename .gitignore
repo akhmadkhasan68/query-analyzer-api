@@ -63,3 +63,6 @@ storages
 
 # Credentials
 /src/infrastructures/modules/storage/credentials/gcs.json
+
+.mcp.json
+.apidog.json

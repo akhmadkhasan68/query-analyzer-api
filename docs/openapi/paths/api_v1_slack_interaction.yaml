@@ -1,0 +1,32 @@
+post:
+    tags:
+        - Slack
+    summary: Handle Slack interactive payload
+    operationId: slackHandleInteraction
+    security: []
+    requestBody:
+        required: true
+        content:
+            application/x-www-form-urlencoded:
+                schema:
+                    type: object
+                    required:
+                        - payload
+                    properties:
+                        payload:
+                            type: string
+                            description: JSON-encoded Slack interactive payload
+    responses:
+        '200':
+            description: Interaction handled
+            content:
+                text/plain:
+                    schema:
+                        type: string
+                        example: OK
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

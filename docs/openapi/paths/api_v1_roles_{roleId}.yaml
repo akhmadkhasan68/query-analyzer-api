@@ -1,0 +1,175 @@
+get:
+    tags:
+        - Roles
+    summary: Get role by ID
+    operationId: roleGetById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    responses:
+        '200':
+            description: Role details
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/RoleV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+patch:
+    tags:
+        - Roles
+    summary: Update role by ID
+    operationId: roleUpdateById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    properties:
+                        name:
+                            type: string
+                            minLength: 1
+                            example: Editor Updated
+                        permission_ids:
+                            type: array
+                            minItems: 1
+                            items:
+                                type: string
+                                format: uuid
+    responses:
+        '200':
+            description: Role updated
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/RoleV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+delete:
+    tags:
+        - Roles
+    summary: Delete role by ID
+    operationId: roleDeleteById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    responses:
+        '200':
+            description: Role deleted
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

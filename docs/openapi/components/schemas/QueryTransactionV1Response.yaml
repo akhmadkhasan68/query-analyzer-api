@@ -1,0 +1,91 @@
+type: object
+required:
+    - id
+    - signature
+    - status
+    - first_occurrence
+    - occurrence_count
+    - total_execution_time
+    - average_execution_time
+    - max_execution_time
+    - min_execution_time
+    - environment
+    - severity
+properties:
+    id:
+        type: string
+        format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    signature:
+        type: string
+        example: 'SELECT * FROM users WHERE id = ?'
+    description:
+        type: string
+        nullable: true
+        example: Slow query on users table
+    status:
+        type: string
+        enum:
+            - open
+            - accepted
+            - resolved
+            - archived
+        example: open
+    first_occurrence:
+        type: string
+        format: date-time
+        example: '2026-01-01T10:00:00+07:00'
+    occurrence_count:
+        type: integer
+        example: 42
+    total_execution_time:
+        type: number
+        example: 12500.5
+    average_execution_time:
+        type: number
+        example: 297.63
+    max_execution_time:
+        type: number
+        example: 1500.0
+    min_execution_time:
+        type: number
+        example: 50.2
+    environment:
+        type: string
+        example: production
+    severity:
+        type: string
+        enum:
+            - low
+            - medium
+            - high
+            - critical
+        example: high
+    assigned_to:
+        type: string
+        nullable: true
+        example: john.doe
+    assigned_at:
+        type: string
+        format: date-time
+        nullable: true
+        example: '2026-01-02T10:00:00+07:00'
+    assigned_by:
+        type: string
+        nullable: true
+        example: admin
+    tags:
+        type: array
+        nullable: true
+        items:
+            type: string
+        example:
+            - slow-query
+            - users-table
+    notes:
+        type: array
+        nullable: true
+        items:
+            type: string
+        example:
+            - Needs index optimization

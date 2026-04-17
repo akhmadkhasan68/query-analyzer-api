@@ -1,0 +1,58 @@
+post:
+    tags:
+        - Users Import
+    summary: Import users from multi-sheet Excel file
+    operationId: userImportExcelMultiSheet
+    security:
+        - AccessToken: []
+    requestBody:
+        required: true
+        content:
+            multipart/form-data:
+                schema:
+                    type: object
+                    required:
+                        - file
+                    properties:
+                        file:
+                            type: string
+                            format: binary
+                            description: Excel file (.xlsx) with multiple sheets
+    responses:
+        '201':
+            description: Users imported
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: array
+                                      items:
+                                          $ref: ../components/schemas/UserV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

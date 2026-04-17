@@ -1,0 +1,28 @@
+get:
+    tags:
+        - Auth OAuth2
+    summary: Get OAuth2 authorization URL
+    operationId: iamAuthOauth2Url
+    security: []
+    responses:
+        '200':
+            description: OAuth2 URL
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      properties:
+                                          url:
+                                              type: string
+                                              example: https://accounts.google.com/o/oauth2/v2/auth?...
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

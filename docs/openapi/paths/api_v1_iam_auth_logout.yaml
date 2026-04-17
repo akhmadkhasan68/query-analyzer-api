@@ -1,0 +1,33 @@
+delete:
+    tags:
+        - Auth
+    summary: Logout current user
+    operationId: iamAuthLogout
+    security:
+        - AccessToken: []
+    responses:
+        '200':
+            description: Logout successful
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

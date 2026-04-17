@@ -1,0 +1,198 @@
+get:
+    tags:
+        - Platforms
+    summary: List platforms (paginated)
+    operationId: platformList
+    security:
+        - AccessToken: []
+    parameters:
+        - $ref: ../components/parameters/PaginatePage.yaml
+        - $ref: ../components/parameters/PaginatePerPage.yaml
+        - $ref: ../components/parameters/PaginateSort.yaml
+        - $ref: ../components/parameters/PaginateOrder.yaml
+        - $ref: ../components/parameters/PaginateSearch.yaml
+        - name: framework
+          in: query
+          required: false
+          schema:
+              type: string
+          description: Filter by framework
+        - name: orm_provider
+          in: query
+          required: false
+          schema:
+              type: string
+          description: Filter by ORM provider
+        - name: database_provider
+          in: query
+          required: false
+          schema:
+              type: string
+          description: Filter by database provider
+    responses:
+        '200':
+            description: Paginated platforms list
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/PlatformPaginatedResponse.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+post:
+    tags:
+        - Platforms
+    summary: Create a platform
+    operationId: platformCreate
+    security:
+        - AccessToken: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - framework
+                        - orm_provider
+                        - database_provider
+                    properties:
+                        framework:
+                            type: string
+                            minLength: 2
+                            maxLength: 100
+                            example: NestJS
+                        orm_provider:
+                            type: string
+                            minLength: 2
+                            maxLength: 100
+                            example: TypeORM
+                        database_provider:
+                            type: string
+                            minLength: 2
+                            maxLength: 100
+                            example: PostgreSQL
+    responses:
+        '201':
+            description: Platform created
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/PlatformV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '409':
+            description: Conflict
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorConflictResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+delete:
+    tags:
+        - Platforms
+    summary: Delete platforms by IDs
+    operationId: platformDeleteByIds
+    security:
+        - AccessToken: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - ids
+                    properties:
+                        ids:
+                            type: array
+                            items:
+                                type: string
+                                format: uuid
+                            example:
+                                - 550e8400-e29b-41d4-a716-446655440000
+    responses:
+        '200':
+            description: Platforms deleted
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

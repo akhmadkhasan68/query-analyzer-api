@@ -1,0 +1,63 @@
+post:
+    tags:
+        - N8N Callbacks
+    summary: AI analysis callback for query transaction event
+    operationId: n8nCallbackAiAnalyzeQueryTransactionEvent
+    security: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - id
+                        - file_storage_id
+                        - slack_user_id
+                        - slack_channel_id
+                    properties:
+                        id:
+                            type: string
+                            example: 550e8400-e29b-41d4-a716-446655440000
+                        file_storage_id:
+                            type: string
+                            minLength: 1
+                            example: 660e8400-e29b-41d4-a716-446655440001
+                        slack_user_id:
+                            type: string
+                            minLength: 1
+                            example: U01234ABCDE
+                        slack_channel_id:
+                            type: string
+                            minLength: 1
+                            example: C01234ABCDE
+                        slack_message_ts:
+                            type: string
+                            nullable: true
+                            example: '1234567890.123456'
+    responses:
+        '200':
+            description: Callback processed
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

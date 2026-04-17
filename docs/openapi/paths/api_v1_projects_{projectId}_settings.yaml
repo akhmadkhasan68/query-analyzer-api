@@ -1,0 +1,187 @@
+get:
+    tags:
+        - Project Settings
+    summary: List project settings (paginated)
+    operationId: projectSettingList
+    security:
+        - AccessToken: []
+    parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+        - $ref: ../components/parameters/PaginatePage.yaml
+        - $ref: ../components/parameters/PaginatePerPage.yaml
+        - $ref: ../components/parameters/PaginateSort.yaml
+        - $ref: ../components/parameters/PaginateOrder.yaml
+        - $ref: ../components/parameters/PaginateSearch.yaml
+        - name: key
+          in: query
+          required: false
+          schema:
+              type: string
+              enum:
+                  - severity
+          description: Filter by setting key
+    responses:
+        '200':
+            description: Paginated project settings list
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ProjectSettingPaginatedResponse.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+post:
+    tags:
+        - Project Settings
+    summary: Create or update a project setting
+    operationId: projectSettingCreateOrUpdate
+    security:
+        - AccessToken: []
+    parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - key
+                        - values
+                    properties:
+                        key:
+                            type: string
+                            enum:
+                                - severity
+                            example: severity
+                        values:
+                            type: object
+                            description: JSON object containing setting values
+                            example:
+                                low: 100
+                                medium: 500
+                                high: 1000
+                                critical: 5000
+    responses:
+        '201':
+            description: Project setting created or updated
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/ProjectSettingV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+delete:
+    tags:
+        - Project Settings
+    summary: Delete project settings by IDs
+    operationId: projectSettingDeleteByIds
+    security:
+        - AccessToken: []
+    parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - ids
+                    properties:
+                        ids:
+                            type: array
+                            items:
+                                type: string
+                                format: uuid
+                            example:
+                                - 550e8400-e29b-41d4-a716-446655440000
+    responses:
+        '200':
+            description: Project settings deleted
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

@@ -1,0 +1,170 @@
+get:
+    tags:
+        - Project Slack Channels
+    summary: List project slack channels (paginated)
+    operationId: projectSlackChannelList
+    security:
+        - AccessToken: []
+    parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+        - $ref: ../components/parameters/PaginatePage.yaml
+        - $ref: ../components/parameters/PaginatePerPage.yaml
+        - $ref: ../components/parameters/PaginateSort.yaml
+        - $ref: ../components/parameters/PaginateOrder.yaml
+        - $ref: ../components/parameters/PaginateSearch.yaml
+    responses:
+        '200':
+            description: Paginated slack channels list
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ProjectSlackChannelPaginatedResponse.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+post:
+    tags:
+        - Project Slack Channels
+    summary: Add a slack channel to project
+    operationId: projectSlackChannelCreate
+    security:
+        - AccessToken: []
+    parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - slack_channel_id
+                    properties:
+                        slack_channel_id:
+                            type: string
+                            minLength: 2
+                            maxLength: 100
+                            example: C01234ABCDE
+    responses:
+        '201':
+            description: Slack channel added
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/ProjectSlackChannelV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+delete:
+    tags:
+        - Project Slack Channels
+    summary: Delete slack channels by IDs
+    operationId: projectSlackChannelDeleteByIds
+    security:
+        - AccessToken: []
+    parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - ids
+                    properties:
+                        ids:
+                            type: array
+                            items:
+                                type: string
+                                format: uuid
+                            example:
+                                - 550e8400-e29b-41d4-a716-446655440000
+    responses:
+        '200':
+            description: Slack channels deleted
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

@@ -1,0 +1,4637 @@
+openapi: 3.0.3
+info:
+  title: ORM Query Analyzer API
+  version: 1.0.0
+  description: |
+    API for capturing, analyzing, and reporting slow database queries across ORM-based applications. Supports multiple platforms, projects, and integrations with Slack and AI-powered analysis.
+servers:
+  - url: /
+    description: Default server
+security:
+  - AccessToken: []
+tags:
+  - name: Health
+    description: Service health check
+  - name: Auth
+    description: Authentication (login, refresh, logout)
+  - name: Auth OAuth2
+    description: OAuth2-based authentication
+  - name: Forgot Password
+    description: Password reset flow
+  - name: Users
+    description: User management
+  - name: Users Import
+    description: Import users from Excel/CSV
+  - name: Users Export
+    description: Export users to Excel/CSV/PDF
+  - name: Roles
+    description: Role management
+  - name: Role Permissions
+    description: Permissions assigned to a role
+  - name: Roles Export
+    description: Export roles to PDF
+  - name: Permissions
+    description: Permission management
+  - name: Permissions Export
+    description: Export permissions to PDF
+  - name: Resources
+    description: Resource management
+  - name: Operations
+    description: Operation management
+  - name: Platforms
+    description: Platform management (framework, ORM, database)
+  - name: Projects
+    description: Project management
+  - name: Project Keys
+    description: API keys for project SDK integration
+  - name: Project Slack Channels
+    description: Slack channel associations for projects
+  - name: Project Settings
+    description: Project-level settings (e.g. severity thresholds)
+  - name: Storage Files
+    description: File upload and management
+  - name: Query Transactions
+    description: Aggregated query transaction records
+  - name: Query Transaction Events
+    description: Individual query execution events
+  - name: Slack
+    description: Slack integration webhooks
+  - name: N8N Callbacks
+    description: N8N workflow callbacks
+paths:
+  /api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+                  data:
+                    type: object
+                    properties:
+                      details:
+                        type: object
+                        example: {}
+  /api/v1/iam/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login with email and password
+      operationId: iamAuthLogin
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@example.com
+                password:
+                  type: string
+                  example: SecurePass123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/IamAuthV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/iam/auth/refresh-token:
+    post:
+      tags:
+        - Auth
+      summary: Refresh access token
+      operationId: iamAuthRefreshToken
+      security:
+        - RefreshToken: []
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/IamAuthV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/iam/auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Get current authenticated user
+      operationId: iamAuthMe
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/iam/auth/logout:
+    delete:
+      tags:
+        - Auth
+      summary: Logout current user
+      operationId: iamAuthLogout
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/iam/auth/oauth2/url:
+    get:
+      tags:
+        - Auth OAuth2
+      summary: Get OAuth2 authorization URL
+      operationId: iamAuthOauth2Url
+      security: []
+      responses:
+        '200':
+          description: OAuth2 URL
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                            example: https://accounts.google.com/o/oauth2/v2/auth?...
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/iam/auth/oauth2:
+    post:
+      tags:
+        - Auth OAuth2
+      summary: Login with OAuth2 authorization code
+      operationId: iamAuthOauth2Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  description: OAuth2 authorization code
+                  example: 4/0AX4XfWi...
+      responses:
+        '200':
+          description: OAuth2 login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/IamAuthV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/iam/forgot-password/request:
+    post:
+      tags:
+        - Forgot Password
+      summary: Request password reset
+      operationId: iamForgotPasswordRequest
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                redirect_url:
+                  type: string
+                  format: uri
+                  nullable: true
+                  example: https://app.example.com/reset-password
+      responses:
+        '200':
+          description: Reset email sent
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/iam/forgot-password/verify:
+    post:
+      tags:
+        - Forgot Password
+      summary: Verify password reset token
+      operationId: iamForgotPasswordVerify
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+                  example: abc123def456
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/iam/forgot-password/reset:
+    post:
+      tags:
+        - Forgot Password
+      summary: Reset password with token
+      operationId: iamForgotPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - password
+                - confirm_password
+              properties:
+                token:
+                  type: string
+                  example: abc123def456
+                password:
+                  type: string
+                  minLength: 8
+                  description: Must contain at least 1 number and 1 letter
+                  example: NewSecurePass123
+                confirm_password:
+                  type: string
+                  example: NewSecurePass123
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users:
+    get:
+      tags:
+        - Users
+      summary: List users (paginated)
+      operationId: userList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: email_verified
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter by email verification status
+        - name: phone_number_verified
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter by phone number verification status
+      responses:
+        '200':
+          description: Paginated users list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    post:
+      tags:
+        - Users
+      summary: Create a user
+      operationId: userCreate
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fullname
+                - email
+                - password
+                - phone_number
+                - role_ids
+              properties:
+                fullname:
+                  type: string
+                  minLength: 1
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  example: john.doe@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  description: Must contain at least 1 number and 1 letter
+                  example: SecurePass123
+                phone_number:
+                  type: string
+                  description: Indonesian phone number format
+                  example: '628123456789'
+                role_ids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+                  example:
+                    - 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorConflictResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      operationId: userGetById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    patch:
+      tags:
+        - Users
+      summary: Update user by ID
+      operationId: userUpdateById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fullname
+                - email
+                - phone_number
+              properties:
+                fullname:
+                  type: string
+                  minLength: 1
+                  example: John Updated
+                email:
+                  type: string
+                  format: email
+                  example: john.updated@example.com
+                phone_number:
+                  type: string
+                  example: '628123456789'
+                role_ids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    delete:
+      tags:
+        - Users
+      summary: Delete user by ID
+      operationId: userDeleteById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/{userId}/password:
+    patch:
+      tags:
+        - Users
+      summary: Update user password
+      operationId: userUpdatePassword
+      security:
+        - AccessToken: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - new_password
+              properties:
+                new_password:
+                  type: string
+                  minLength: 8
+                  description: Must contain at least 1 number and 1 letter
+                  example: NewSecurePass123
+      responses:
+        '200':
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/import/excel-template:
+    get:
+      tags:
+        - Users Import
+      summary: Download Excel import template
+      operationId: userImportExcelTemplate
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: Excel template file
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/import/excel:
+    post:
+      tags:
+        - Users Import
+      summary: Import users from Excel file
+      operationId: userImportExcel
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Excel file (.xlsx)
+                sheet_name:
+                  type: string
+                  description: Sheet name to import from
+      responses:
+        '201':
+          description: Users imported
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/import/excel-multi-sheet:
+    post:
+      tags:
+        - Users Import
+      summary: Import users from multi-sheet Excel file
+      operationId: userImportExcelMultiSheet
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Excel file (.xlsx) with multiple sheets
+      responses:
+        '201':
+          description: Users imported
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/import/csv-template:
+    get:
+      tags:
+        - Users Import
+      summary: Download CSV import template
+      operationId: userImportCsvTemplate
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: CSV template file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/import/csv:
+    post:
+      tags:
+        - Users Import
+      summary: Import users from CSV file
+      operationId: userImportCsv
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV file
+                delimiter:
+                  type: string
+                  maxLength: 1
+                  default: ;
+                  description: CSV delimiter character
+      responses:
+        '201':
+          description: Users imported
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/export/excel:
+    get:
+      tags:
+        - Users Export
+      summary: Export users to Excel
+      operationId: userExportExcel
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: Excel file
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/export/excel-multi-sheet:
+    get:
+      tags:
+        - Users Export
+      summary: Export users to multi-sheet Excel
+      operationId: userExportExcelMultiSheet
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: Excel file with multiple sheets
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/export/csv:
+    get:
+      tags:
+        - Users Export
+      summary: Export users to CSV
+      operationId: userExportCsv
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/users/export/pdf:
+    get:
+      tags:
+        - Users Export
+      summary: Export users to PDF
+      operationId: userExportPdf
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/roles:
+    get:
+      tags:
+        - Roles
+      summary: List roles (paginated)
+      operationId: roleList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: slug
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by role slug
+      responses:
+        '200':
+          description: Paginated roles list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolePaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    post:
+      tags:
+        - Roles
+      summary: Create a role
+      operationId: roleCreate
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - permission_ids
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  example: Editor
+                permission_ids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+                  example:
+                    - 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '201':
+          description: Role created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RoleV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorConflictResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/roles/{roleId}:
+    get:
+      tags:
+        - Roles
+      summary: Get role by ID
+      operationId: roleGetById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Role details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RoleV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    patch:
+      tags:
+        - Roles
+      summary: Update role by ID
+      operationId: roleUpdateById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  example: Editor Updated
+                permission_ids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RoleV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    delete:
+      tags:
+        - Roles
+      summary: Delete role by ID
+      operationId: roleDeleteById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Role deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/roles/{roleId}/permissions:
+    get:
+      tags:
+        - Role Permissions
+      summary: List role permissions (paginated)
+      operationId: rolePermissionList
+      security:
+        - AccessToken: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: slug
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by permission slug
+      responses:
+        '200':
+          description: Paginated permissions list for role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/roles/export/pdf:
+    get:
+      tags:
+        - Roles Export
+      summary: Export roles to PDF
+      operationId: roleExportPdf
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/permissions:
+    get:
+      tags:
+        - Permissions
+      summary: List permissions (paginated)
+      operationId: permissionList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: slug
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by permission slug
+      responses:
+        '200':
+          description: Paginated permissions list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/permissions/{permissionId}:
+    get:
+      tags:
+        - Permissions
+      summary: Get permission by ID
+      operationId: permissionGetById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: permissionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Permission details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PermissionV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/permissions/export/pdf:
+    get:
+      tags:
+        - Permissions Export
+      summary: Export permissions to PDF
+      operationId: permissionExportPdf
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/resources:
+    get:
+      tags:
+        - Resources
+      summary: List resources (paginated)
+      operationId: resourceList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: slug
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by resource slug
+      responses:
+        '200':
+          description: Paginated resources list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourcePaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/resources/{id}:
+    get:
+      tags:
+        - Resources
+      summary: Get resource by ID
+      operationId: resourceGetById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Resource details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourceV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/operations:
+    get:
+      tags:
+        - Operations
+      summary: List operations (paginated)
+      operationId: operationList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: slug
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by operation slug
+      responses:
+        '200':
+          description: Paginated operations list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/operations/{id}:
+    get:
+      tags:
+        - Operations
+      summary: Get operation by ID
+      operationId: operationGetById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Operation details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OperationV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/platforms:
+    get:
+      tags:
+        - Platforms
+      summary: List platforms (paginated)
+      operationId: platformList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: framework
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by framework
+        - name: orm_provider
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by ORM provider
+        - name: database_provider
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by database provider
+      responses:
+        '200':
+          description: Paginated platforms list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    post:
+      tags:
+        - Platforms
+      summary: Create a platform
+      operationId: platformCreate
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - framework
+                - orm_provider
+                - database_provider
+              properties:
+                framework:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: NestJS
+                orm_provider:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: TypeORM
+                database_provider:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: PostgreSQL
+      responses:
+        '201':
+          description: Platform created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PlatformV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorConflictResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    delete:
+      tags:
+        - Platforms
+      summary: Delete platforms by IDs
+      operationId: platformDeleteByIds
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  example:
+                    - 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Platforms deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/platforms/{id}:
+    get:
+      tags:
+        - Platforms
+      summary: Get platform by ID
+      operationId: platformGetById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Platform details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PlatformV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    put:
+      tags:
+        - Platforms
+      summary: Update platform by ID
+      operationId: platformUpdateById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - framework
+                - orm_provider
+                - database_provider
+              properties:
+                framework:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: NestJS
+                orm_provider:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: TypeORM
+                database_provider:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: PostgreSQL
+      responses:
+        '200':
+          description: Platform updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/projects:
+    get:
+      tags:
+        - Projects
+      summary: List projects (paginated)
+      operationId: projectList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - active
+              - inactive
+              - archived
+          description: Filter by project status
+      responses:
+        '200':
+          description: Paginated projects list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    post:
+      tags:
+        - Projects
+      summary: Create a project
+      operationId: projectCreate
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - platform_id
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: My Project
+                description:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+                  example: A sample project
+                status:
+                  type: string
+                  enum:
+                    - active
+                    - inactive
+                    - archived
+                  default: active
+                platform_id:
+                  type: string
+                  format: uuid
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                gitlab:
+                  type: object
+                  properties:
+                    project_id:
+                      type: integer
+                      example: 12345
+                    url:
+                      type: string
+                      format: uri
+                      example: https://gitlab.com/org/project
+                    group_id:
+                      type: integer
+                      example: 100
+                    group_name:
+                      type: string
+                      example: my-org
+                    default_branch:
+                      type: string
+                      example: main
+                    visibility:
+                      type: string
+                      example: private
+                slack_channel:
+                  type: object
+                  properties:
+                    slack_channel_id:
+                      type: string
+                      example: C01234ABCDE
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorConflictResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    delete:
+      tags:
+        - Projects
+      summary: Delete projects by IDs
+      operationId: projectDeleteByIds
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  example:
+                    - 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Projects deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/projects/{id}:
+    get:
+      tags:
+        - Projects
+      summary: Get project by ID
+      operationId: projectGetById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Project details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    put:
+      tags:
+        - Projects
+      summary: Update project by ID
+      operationId: projectUpdateById
+      security:
+        - AccessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - platform_id
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: Updated Project
+                description:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+                  example: Updated description
+                status:
+                  type: string
+                  enum:
+                    - active
+                    - inactive
+                    - archived
+                platform_id:
+                  type: string
+                  format: uuid
+                gitlab:
+                  type: object
+                  properties:
+                    project_id:
+                      type: integer
+                    url:
+                      type: string
+                      format: uri
+                    group_id:
+                      type: integer
+                    group_name:
+                      type: string
+                    default_branch:
+                      type: string
+                    visibility:
+                      type: string
+                slack_channel:
+                  type: object
+                  properties:
+                    slack_channel_id:
+                      type: string
+      responses:
+        '200':
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/projects/{projectId}/keys:
+    get:
+      tags:
+        - Project Keys
+      summary: List project keys (paginated)
+      operationId: projectKeyList
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+      responses:
+        '200':
+          description: Paginated project keys list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectKeyPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    post:
+      tags:
+        - Project Keys
+      summary: Create a project key
+      operationId: projectKeyCreate
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: Production Key
+      responses:
+        '201':
+          description: Project key created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectKeyV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    delete:
+      tags:
+        - Project Keys
+      summary: Delete project keys by IDs
+      operationId: projectKeyDeleteByIds
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  example:
+                    - 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Project keys deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/projects/{projectId}/slack-channels:
+    get:
+      tags:
+        - Project Slack Channels
+      summary: List project slack channels (paginated)
+      operationId: projectSlackChannelList
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+      responses:
+        '200':
+          description: Paginated slack channels list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSlackChannelPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    post:
+      tags:
+        - Project Slack Channels
+      summary: Add a slack channel to project
+      operationId: projectSlackChannelCreate
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - slack_channel_id
+              properties:
+                slack_channel_id:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: C01234ABCDE
+      responses:
+        '201':
+          description: Slack channel added
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectSlackChannelV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    delete:
+      tags:
+        - Project Slack Channels
+      summary: Delete slack channels by IDs
+      operationId: projectSlackChannelDeleteByIds
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  example:
+                    - 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Slack channels deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/projects/{projectId}/settings:
+    get:
+      tags:
+        - Project Settings
+      summary: List project settings (paginated)
+      operationId: projectSettingList
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: key
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - severity
+          description: Filter by setting key
+      responses:
+        '200':
+          description: Paginated project settings list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSettingPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    post:
+      tags:
+        - Project Settings
+      summary: Create or update a project setting
+      operationId: projectSettingCreateOrUpdate
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - key
+                - values
+              properties:
+                key:
+                  type: string
+                  enum:
+                    - severity
+                  example: severity
+                values:
+                  type: object
+                  description: JSON object containing setting values
+                  example:
+                    low: 100
+                    medium: 500
+                    high: 1000
+                    critical: 5000
+      responses:
+        '201':
+          description: Project setting created or updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProjectSettingV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    delete:
+      tags:
+        - Project Settings
+      summary: Delete project settings by IDs
+      operationId: projectSettingDeleteByIds
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  example:
+                    - 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Project settings deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/storage-file/upload:
+    post:
+      tags:
+        - Storage Files
+      summary: Upload a file
+      operationId: storageFileUpload
+      security: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload
+      responses:
+        '201':
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StorageFileV1Response'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/storage-file/{id}:
+    get:
+      tags:
+        - Storage Files
+      summary: Get file by ID
+      operationId: storageFileGetById
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StorageFileV1Response'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+    delete:
+      tags:
+        - Storage Files
+      summary: Delete file by ID
+      operationId: storageFileDeleteById
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/query-transactions:
+    post:
+      tags:
+        - Query Transactions
+      summary: Create a query transaction
+      operationId: queryTransactionCreate
+      security:
+        - AccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - project_id
+                - raw_query
+                - parameters
+                - signature
+                - total_execution_time
+                - average_execution_time
+                - max_execution_time
+                - min_execution_time
+                - environment
+              properties:
+                project_id:
+                  type: string
+                  format: uuid
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                raw_query:
+                  type: string
+                  example: SELECT * FROM users WHERE email = $1
+                parameters:
+                  type: object
+                  additionalProperties: true
+                  example:
+                    $1: john@example.com
+                signature:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                  example: SELECT * FROM users WHERE email = ?
+                total_execution_time:
+                  type: number
+                  minimum: 0
+                  example: 12500.5
+                average_execution_time:
+                  type: number
+                  minimum: 0
+                  example: 297.63
+                max_execution_time:
+                  type: number
+                  minimum: 0
+                  example: 1500
+                min_execution_time:
+                  type: number
+                  minimum: 0
+                  example: 50.2
+                environment:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  example: production
+      responses:
+        '201':
+          description: Query transaction created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/QueryTransactionV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/query-transaction-events:
+    get:
+      tags:
+        - Query Transaction Events
+      summary: List query transaction events (paginated)
+      operationId: queryTransactionEventList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+        - name: severity
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - low
+              - medium
+              - high
+              - critical
+          description: Filter by severity level
+      responses:
+        '200':
+          description: Paginated query transaction events list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryTransactionEventPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/query-transaction-events/capture:
+    post:
+      tags:
+        - Query Transaction Events
+      summary: Capture a query transaction event
+      operationId: queryTransactionEventCapture
+      description: Captures a slow query event from the application SDK. Authenticated via Project API Key header.
+      security:
+        - ProjectApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query_id
+                - raw_query
+                - execution_time_ms
+                - timestamp
+                - context_type
+                - environment
+              properties:
+                query_id:
+                  type: string
+                  format: uuid
+                  example: 660e8400-e29b-41d4-a716-446655440001
+                raw_query:
+                  type: string
+                  example: SELECT * FROM users WHERE email = $1
+                parameters:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+                  example:
+                    $1: john@example.com
+                execution_time_ms:
+                  type: number
+                  example: 1250.5
+                stack_trace:
+                  type: array
+                  nullable: true
+                  items:
+                    type: string
+                  example:
+                    - at UserRepository.findByEmail (user.repository.ts:42)
+                timestamp:
+                  type: string
+                  format: date-time
+                  example: '2026-01-01T10:00:00+07:00'
+                context_type:
+                  type: string
+                  example: http-request
+                environment:
+                  type: string
+                  example: production
+                application_name:
+                  type: string
+                  nullable: true
+                  example: my-api
+                version:
+                  type: string
+                  nullable: true
+                  example: 1.0.0
+                execution_plan:
+                  type: object
+                  nullable: true
+                  properties:
+                    database_provider:
+                      type: string
+                      example: postgresql
+                    plan_format:
+                      type: object
+                      properties:
+                        content_type:
+                          type: string
+                          example: application/json
+                        file_extension:
+                          type: string
+                          example: json
+                        description:
+                          type: string
+                          example: PostgreSQL EXPLAIN ANALYZE output
+                    content:
+                      type: string
+                      example: '{"Plan": {"Node Type": "Seq Scan"}}'
+      responses:
+        '201':
+          description: Event captured
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/query-transaction-events/notify:
+    post:
+      tags:
+        - Query Transaction Events
+      summary: Notify about query transaction events
+      operationId: queryTransactionEventNotify
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query_ids
+              properties:
+                query_ids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+                  example:
+                    - 660e8400-e29b-41d4-a716-446655440001
+      responses:
+        '200':
+          description: Notification sent
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/slack/command/{slashCommand}:
+    post:
+      tags:
+        - Slack
+      summary: Handle Slack slash command
+      operationId: slackHandleCommand
+      security: []
+      parameters:
+        - name: slashCommand
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Slash command name
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - token
+                - team_id
+                - team_domain
+                - channel_id
+                - channel_name
+                - user_id
+                - user_name
+                - command
+                - api_app_id
+                - response_url
+                - trigger_id
+              properties:
+                token:
+                  type: string
+                team_id:
+                  type: string
+                team_domain:
+                  type: string
+                channel_id:
+                  type: string
+                channel_name:
+                  type: string
+                user_id:
+                  type: string
+                user_name:
+                  type: string
+                command:
+                  type: string
+                text:
+                  type: string
+                api_app_id:
+                  type: string
+                is_enterprise_install:
+                  type: string
+                response_url:
+                  type: string
+                  format: uri
+                trigger_id:
+                  type: string
+      responses:
+        '200':
+          description: Command handled
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/slack/interaction:
+    post:
+      tags:
+        - Slack
+      summary: Handle Slack interactive payload
+      operationId: slackHandleInteraction
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - payload
+              properties:
+                payload:
+                  type: string
+                  description: JSON-encoded Slack interactive payload
+      responses:
+        '200':
+          description: Interaction handled
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/n8n/callback/ai-analyze-query-transaction-event:
+    post:
+      tags:
+        - N8N Callbacks
+      summary: AI analysis callback for query transaction event
+      operationId: n8nCallbackAiAnalyzeQueryTransactionEvent
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - file_storage_id
+                - slack_user_id
+                - slack_channel_id
+              properties:
+                id:
+                  type: string
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                file_storage_id:
+                  type: string
+                  minLength: 1
+                  example: 660e8400-e29b-41d4-a716-446655440001
+                slack_user_id:
+                  type: string
+                  minLength: 1
+                  example: U01234ABCDE
+                slack_channel_id:
+                  type: string
+                  minLength: 1
+                  example: C01234ABCDE
+                slack_message_ts:
+                  type: string
+                  nullable: true
+                  example: '1234567890.123456'
+      responses:
+        '200':
+          description: Callback processed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+                        example: null
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidationResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+components:
+  securitySchemes:
+    AccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token
+    RefreshToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT refresh token
+    ProjectApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Project API key for SDK integration
+  schemas:
+    BaseResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Success
+        data:
+          type: object
+          nullable: true
+    ResourceV1Response:
+      type: object
+      required:
+        - id
+        - slug
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        slug:
+          type: string
+          example: USER
+        name:
+          type: string
+          example: User
+        description:
+          type: string
+          nullable: true
+          example: User resource
+    OperationV1Response:
+      type: object
+      required:
+        - id
+        - slug
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        slug:
+          type: string
+          example: VIEW
+        name:
+          type: string
+          example: View
+    PermissionV1Response:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          example: User View
+        slug:
+          type: string
+          example: USER:VIEW
+        description:
+          type: string
+          nullable: true
+          example: Permission to view users
+        resource:
+          $ref: '#/components/schemas/ResourceV1Response'
+        operation:
+          $ref: '#/components/schemas/OperationV1Response'
+    RoleV1Response:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          example: Admin
+        slug:
+          type: string
+          example: admin
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionV1Response'
+    UserV1Response:
+      type: object
+      required:
+        - id
+        - fullname
+        - email
+        - phone_number
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        fullname:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        phone_number:
+          type: string
+          example: '628123456789'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleV1Response'
+    IamAuthV1Response:
+      type: object
+      required:
+        - user
+        - token
+      properties:
+        user:
+          $ref: '#/components/schemas/UserV1Response'
+        token:
+          type: object
+          required:
+            - access_token
+            - refresh_token
+            - expires_in
+          properties:
+            access_token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            refresh_token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            expires_in:
+              type: integer
+              description: Token expiration time in seconds
+              example: 3600
+    ErrorUnauthorizedResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Not Authorized
+        error:
+          type: string
+          example: No authorization token provided
+    ErrorValidationResponse:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          example: Validation Error
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+                example: email
+              messages:
+                type: array
+                items:
+                  type: string
+                example:
+                  - Invalid email format
+    ErrorInternalServerResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Internal Server Error
+        error:
+          type: string
+          example: Internal Server Error
+    PaginateMeta:
+      type: object
+      required:
+        - page
+        - per_page
+        - total
+        - total_page
+      properties:
+        page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 100
+        total_page:
+          type: integer
+          example: 10
+    UserPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UserV1Response'
+    ErrorForbiddenResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Forbidden Access
+        error:
+          type: string
+          example: Insufficient permissions
+    ErrorConflictResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Conflict
+        error:
+          type: string
+          example: Resource already exists
+    ErrorNotFoundResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Not Found
+        error:
+          type: string
+          example: Resource not found
+    RolePaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RoleV1Response'
+    PermissionPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PermissionV1Response'
+    ResourcePaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ResourceV1Response'
+    OperationPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OperationV1Response'
+    PlatformV1Response:
+      type: object
+      required:
+        - id
+        - framework
+        - orm_provider
+        - database_provider
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        framework:
+          type: string
+          example: NestJS
+        orm_provider:
+          type: string
+          example: TypeORM
+        database_provider:
+          type: string
+          example: PostgreSQL
+    PlatformPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PlatformV1Response'
+    ProjectKeyV1Response:
+      type: object
+      required:
+        - id
+        - name
+        - masked_key
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          example: Production Key
+        masked_key:
+          type: string
+          example: qa_****abcd
+        plain_key:
+          type: string
+          nullable: true
+          description: Only returned on creation
+          example: qa_1234567890abcdef
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-01-01T10:00:00+07:00'
+    ProjectGitlabV1Response:
+      type: object
+      required:
+        - id
+        - gitlab_project_id
+        - gitlab_url
+        - gitlab_group_id
+        - gitlab_group_name
+        - gitlab_default_branch
+        - gitlab_visibility
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        gitlab_project_id:
+          type: integer
+          example: 12345
+        gitlab_url:
+          type: string
+          example: https://gitlab.com/org/project
+        gitlab_group_id:
+          type: integer
+          example: 100
+        gitlab_group_name:
+          type: string
+          example: my-org
+        gitlab_default_branch:
+          type: string
+          example: main
+        gitlab_visibility:
+          type: string
+          example: private
+    ProjectV1Response:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          example: My Project
+        description:
+          type: string
+          nullable: true
+          example: A sample project
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - archived
+          example: active
+        platform:
+          $ref: '#/components/schemas/PlatformV1Response'
+        keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectKeyV1Response'
+        project_gitlab:
+          $ref: '#/components/schemas/ProjectGitlabV1Response'
+    ProjectPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProjectV1Response'
+    ProjectKeyPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProjectKeyV1Response'
+    ProjectSlackChannelV1Response:
+      type: object
+      required:
+        - id
+        - project
+        - slack_channel_id
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        project:
+          $ref: '#/components/schemas/ProjectV1Response'
+        slack_channel_id:
+          type: string
+          example: C01234ABCDE
+    ProjectSlackChannelPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProjectSlackChannelV1Response'
+    ProjectSettingV1Response:
+      type: object
+      required:
+        - id
+        - project
+        - key
+        - values
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        project:
+          $ref: '#/components/schemas/ProjectV1Response'
+        key:
+          type: string
+          enum:
+            - severity
+          example: severity
+        values:
+          type: object
+          description: JSON object containing setting values
+          example:
+            low: 100
+            medium: 500
+            high: 1000
+            critical: 5000
+    ProjectSettingPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProjectSettingV1Response'
+    StorageFileV1Response:
+      type: object
+      required:
+        - id
+        - name
+        - path
+        - size
+        - mimetype
+        - file_url
+        - driver
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          example: report.pdf
+        path:
+          type: string
+          example: uploads/report.pdf
+        size:
+          type: string
+          example: 1.5 MB
+        mimetype:
+          type: string
+          example: application/pdf
+        file_url:
+          type: string
+          nullable: true
+          example: https://storage.example.com/uploads/report.pdf
+        driver:
+          type: string
+          enum:
+            - local
+            - minio
+            - gcs
+          example: local
+    QueryTransactionV1Response:
+      type: object
+      required:
+        - id
+        - signature
+        - status
+        - first_occurrence
+        - occurrence_count
+        - total_execution_time
+        - average_execution_time
+        - max_execution_time
+        - min_execution_time
+        - environment
+        - severity
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        signature:
+          type: string
+          example: SELECT * FROM users WHERE id = ?
+        description:
+          type: string
+          nullable: true
+          example: Slow query on users table
+        status:
+          type: string
+          enum:
+            - open
+            - accepted
+            - resolved
+            - archived
+          example: open
+        first_occurrence:
+          type: string
+          format: date-time
+          example: '2026-01-01T10:00:00+07:00'
+        occurrence_count:
+          type: integer
+          example: 42
+        total_execution_time:
+          type: number
+          example: 12500.5
+        average_execution_time:
+          type: number
+          example: 297.63
+        max_execution_time:
+          type: number
+          example: 1500
+        min_execution_time:
+          type: number
+          example: 50.2
+        environment:
+          type: string
+          example: production
+        severity:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - critical
+          example: high
+        assigned_to:
+          type: string
+          nullable: true
+          example: john.doe
+        assigned_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-01-02T10:00:00+07:00'
+        assigned_by:
+          type: string
+          nullable: true
+          example: admin
+        tags:
+          type: array
+          nullable: true
+          items:
+            type: string
+          example:
+            - slow-query
+            - users-table
+        notes:
+          type: array
+          nullable: true
+          items:
+            type: string
+          example:
+            - Needs index optimization
+    QueryTransactionEventV1Response:
+      type: object
+      required:
+        - id
+        - project
+        - query_id
+        - raw_query
+        - execution_time_ms
+        - timestamp
+        - received_at
+        - environment
+        - severity
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        project:
+          $ref: '#/components/schemas/ProjectV1Response'
+        query_id:
+          type: string
+          format: uuid
+          example: 660e8400-e29b-41d4-a716-446655440001
+        raw_query:
+          type: string
+          example: SELECT * FROM users WHERE email = ?
+        execution_time_ms:
+          type: number
+          example: 1250.5
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-01-01T10:00:00+07:00'
+        received_at:
+          type: string
+          format: date-time
+          example: '2026-01-01T10:00:01+07:00'
+        environment:
+          type: string
+          example: production
+        severity:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - critical
+          example: high
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-01-01T10:00:01+07:00'
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-01-01T10:00:01+07:00'
+    QueryTransactionEventPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/QueryTransactionEventV1Response'
+  parameters:
+    PaginatePage:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Current page number
+    PaginatePerPage:
+      name: per_page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 10
+      description: Number of items per page
+    PaginateSort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        default: updated_at
+      description: Field name for sorting
+    PaginateOrder:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - ASC
+          - DESC
+        default: DESC
+      description: Sort direction
+    PaginateSearch:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Search keyword to filter results

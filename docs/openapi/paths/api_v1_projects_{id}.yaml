@@ -1,0 +1,158 @@
+get:
+    tags:
+        - Projects
+    summary: Get project by ID
+    operationId: projectGetById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    responses:
+        '200':
+            description: Project details
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/ProjectV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+put:
+    tags:
+        - Projects
+    summary: Update project by ID
+    operationId: projectUpdateById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - name
+                        - platform_id
+                    properties:
+                        name:
+                            type: string
+                            minLength: 2
+                            maxLength: 100
+                            example: Updated Project
+                        description:
+                            type: string
+                            maxLength: 500
+                            nullable: true
+                            example: Updated description
+                        status:
+                            type: string
+                            enum:
+                                - active
+                                - inactive
+                                - archived
+                        platform_id:
+                            type: string
+                            format: uuid
+                        gitlab:
+                            type: object
+                            properties:
+                                project_id:
+                                    type: integer
+                                url:
+                                    type: string
+                                    format: uri
+                                group_id:
+                                    type: integer
+                                group_name:
+                                    type: string
+                                default_branch:
+                                    type: string
+                                visibility:
+                                    type: string
+                        slack_channel:
+                            type: object
+                            properties:
+                                slack_channel_id:
+                                    type: string
+    responses:
+        '200':
+            description: Project updated
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

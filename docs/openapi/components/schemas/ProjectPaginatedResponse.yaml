@@ -1,0 +1,13 @@
+allOf:
+    - $ref: ./BaseResponse.yaml
+    - type: object
+      properties:
+          data:
+              type: object
+              properties:
+                  meta:
+                      $ref: ./PaginateMeta.yaml
+                  items:
+                      type: array
+                      items:
+                          $ref: ./ProjectV1Response.yaml

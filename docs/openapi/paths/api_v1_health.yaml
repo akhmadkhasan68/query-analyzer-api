@@ -1,0 +1,23 @@
+get:
+    tags:
+        - Health
+    summary: Health check
+    operationId: healthCheck
+    security: []
+    responses:
+        '200':
+            description: Service is healthy
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        properties:
+                            message:
+                                type: string
+                                example: Success
+                            data:
+                                type: object
+                                properties:
+                                    details:
+                                        type: object
+                                        example: {}

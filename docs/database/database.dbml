@@ -1,0 +1,193 @@
+Project "query_analyzer" {
+    database_type: "PostgreSQL"
+    Note: "This is the database schema for the Query Analyzer API. It includes tables for users, roles, permissions, projects, and related entities."
+}
+
+Table "operations" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "slug" varchar(255) [unique, not null]
+  "name" varchar(255) [not null]
+}
+
+Table "resources" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "slug" varchar(255) [unique, not null]
+  "name" varchar(255) [not null]
+  "description" text
+}
+
+Table "permissions" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "slug" varchar [not null]
+  "name" varchar [not null]
+  "description" text
+  "resource_id" uuid
+  "operation_id" uuid
+}
+
+Table "roles" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "slug" varchar [unique, not null]
+  "name" varchar [not null]
+  "description" text
+}
+
+Table "user_tokens" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "token" varchar [unique, not null]
+  "expires_at" timestamp [not null]
+  "type" varchar [not null, default: 'refresh-token']
+  "user_id" uuid
+}
+
+Table "users" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "fullname" varchar [not null]
+  "email" varchar [unique, not null]
+  "email_verified_at" timestamp
+  "password" varchar [not null]
+  "phone_number" varchar [unique, not null]
+  "phone_number_verified_at" timestamp
+}
+
+Table "storage_file" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "name" varchar(255) [not null]
+  "path" varchar(255) [not null]
+  "size" int4 [not null]
+  "mimetype" varchar(50) [not null]
+  "driver" varchar(50) [not null]
+}
+
+Table "role_permissions" {
+  "permissions_id" uuid [not null]
+  "roles_id" uuid [not null]
+
+  Indexes {
+    (permissions_id, roles_id) [type: btree, name: "PK_3a2404462ad8373a26704fb1f1c"]
+    roles_id [type: btree, name: "IDX_ad074b0f95ff0488162868be2c"]
+    permissions_id [type: btree, name: "IDX_bae04782e4d2b4d4c978528970"]
+  }
+}
+
+Table "user_roles" {
+  "roles_id" uuid [not null]
+  "users_id" uuid [not null]
+
+  Indexes {
+    (roles_id, users_id) [type: btree, name: "PK_65ec3daed53f391c53df7e2e8fb"]
+    roles_id [type: btree, name: "IDX_4a08d003e00caf075a4a212d23"]
+    users_id [type: btree, name: "IDX_8e1215206acb19f1c38dbda909"]
+  }
+}
+
+Table "projects" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "name" varchar [not null]
+  "description" varchar
+  "status" varchar [not null, default: 'active']
+  "platform_id" uuid
+}
+
+Table "project_keys" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "project_id" uuid [not null]
+  "name" varchar [not null]
+  "hashed_key" varchar [not null]
+  "masked_key" varchar [not null]
+  "last_used_at" timestamptz [not null, default: `now()`]
+}
+
+Table "platforms" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "framework" varchar [not null]
+  "orm_provider" varchar [not null]
+  "database_provider" varchar [not null]
+}
+
+Table "project_gitlabs" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "gitlab_project_id" int8 [not null]
+  "gitlab_url" varchar [not null]
+  "gitlab_group_id" int8 [not null]
+  "gitlab_group_name" varchar [not null]
+  "gitlab_default_branch" varchar [not null]
+  "gitlab_visibility" varchar [not null]
+  "project_id" uuid [unique, not null]
+}
+
+Table "project_slack_channels" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "project_id" uuid [not null]
+  "slack_channel_id" varchar [not null]
+}
+
+Table "project_settings" {
+  "id" uuid [pk, not null, default: `uuid_generate_v4()`]
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "deleted_at" timestamp
+  "project_id" uuid [unique, not null]
+  "key" varchar [not null]
+  "values" jsonb [not null]
+}
+
+Ref "FK_466e789688587a5013d6e873310":"operations"."id" < "permissions"."operation_id"
+
+Ref "FK_a5b7bf2f14f8df49fc610e9a8be":"resources"."id" < "permissions"."resource_id"
+
+Ref "FK_91a93ce9f4f8f7bc79cd043165d":"projects"."id" < "project_gitlabs"."project_id"
+
+Ref "FK_8350c01bda6cd054a653edd010d":"projects"."id" < "project_keys"."project_id"
+
+Ref "FK_05cf250364d77b0603193d55422":"projects"."id" < "project_settings"."project_id"
+
+Ref "FK_489b8b731b0e0233e7b00f8f10e":"projects"."id" < "project_slack_channels"."project_id"
+
+Ref "FK_7fcec57e009546d1e1e1bf2a170":"platforms"."id" < "projects"."platform_id"
+
+Ref "FK_ad074b0f95ff0488162868be2c7":"roles"."id" < "role_permissions"."roles_id" [update: cascade, delete: cascade]
+
+Ref "FK_bae04782e4d2b4d4c978528970c":"permissions"."id" < "role_permissions"."permissions_id" [update: cascade, delete: cascade]
+
+Ref "FK_4a08d003e00caf075a4a212d23d":"roles"."id" < "user_roles"."roles_id" [update: cascade, delete: cascade]
+
+Ref "FK_8e1215206acb19f1c38dbda9091":"users"."id" < "user_roles"."users_id" [update: cascade, delete: cascade]
+
+Ref "FK_9e144a67be49e5bba91195ef5de":"users"."id" < "user_tokens"."user_id"

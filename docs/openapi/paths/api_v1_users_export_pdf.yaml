@@ -1,0 +1,33 @@
+get:
+    tags:
+        - Users Export
+    summary: Export users to PDF
+    operationId: userExportPdf
+    security:
+        - AccessToken: []
+    responses:
+        '200':
+            description: PDF file
+            content:
+                application/pdf:
+                    schema:
+                        type: string
+                        format: binary
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

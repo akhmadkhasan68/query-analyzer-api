@@ -1,0 +1,63 @@
+post:
+    tags:
+        - Users Import
+    summary: Import users from CSV file
+    operationId: userImportCsv
+    security:
+        - AccessToken: []
+    requestBody:
+        required: true
+        content:
+            multipart/form-data:
+                schema:
+                    type: object
+                    required:
+                        - file
+                    properties:
+                        file:
+                            type: string
+                            format: binary
+                            description: CSV file
+                        delimiter:
+                            type: string
+                            maxLength: 1
+                            default: ;
+                            description: CSV delimiter character
+    responses:
+        '201':
+            description: Users imported
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: array
+                                      items:
+                                          $ref: ../components/schemas/UserV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

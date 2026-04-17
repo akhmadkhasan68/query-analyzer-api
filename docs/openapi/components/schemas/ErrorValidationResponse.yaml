@@ -1,0 +1,22 @@
+type: object
+required:
+    - message
+    - errors
+properties:
+    message:
+        type: string
+        example: Validation Error
+    errors:
+        type: array
+        items:
+            type: object
+            properties:
+                path:
+                    type: string
+                    example: email
+                messages:
+                    type: array
+                    items:
+                        type: string
+                    example:
+                        - Invalid email format

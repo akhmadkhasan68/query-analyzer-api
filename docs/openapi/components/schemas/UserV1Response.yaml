@@ -1,0 +1,25 @@
+type: object
+required:
+    - id
+    - fullname
+    - email
+    - phone_number
+properties:
+    id:
+        type: string
+        format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    fullname:
+        type: string
+        example: John Doe
+    email:
+        type: string
+        format: email
+        example: john.doe@example.com
+    phone_number:
+        type: string
+        example: '628123456789'
+    roles:
+        type: array
+        items:
+            $ref: ./RoleV1Response.yaml

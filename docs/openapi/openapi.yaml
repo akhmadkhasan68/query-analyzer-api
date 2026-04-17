@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+    title: ORM Query Analyzer API
+    version: 1.0.0
+    description: >
+        API for capturing, analyzing, and reporting slow database queries across
+        ORM-based applications. Supports multiple platforms, projects, and
+        integrations with Slack and AI-powered analysis.
+
+servers:
+    - url: /
+      description: Default server
+
+security:
+    - AccessToken: []
+
+tags:
+    - name: Health
+      description: Service health check
+    - name: Auth
+      description: Authentication (login, refresh, logout)
+    - name: Auth OAuth2
+      description: OAuth2-based authentication
+    - name: Forgot Password
+      description: Password reset flow
+    - name: Users
+      description: User management
+    - name: Users Import
+      description: Import users from Excel/CSV
+    - name: Users Export
+      description: Export users to Excel/CSV/PDF
+    - name: Roles
+      description: Role management
+    - name: Role Permissions
+      description: Permissions assigned to a role
+    - name: Roles Export
+      description: Export roles to PDF
+    - name: Permissions
+      description: Permission management
+    - name: Permissions Export
+      description: Export permissions to PDF
+    - name: Resources
+      description: Resource management
+    - name: Operations
+      description: Operation management
+    - name: Platforms
+      description: Platform management (framework, ORM, database)
+    - name: Projects
+      description: Project management
+    - name: Project Keys
+      description: API keys for project SDK integration
+    - name: Project Slack Channels
+      description: Slack channel associations for projects
+    - name: Project Settings
+      description: Project-level settings (e.g. severity thresholds)
+    - name: Storage Files
+      description: File upload and management
+    - name: Query Transactions
+      description: Aggregated query transaction records
+    - name: Query Transaction Events
+      description: Individual query execution events
+    - name: Slack
+      description: Slack integration webhooks
+    - name: N8N Callbacks
+      description: N8N workflow callbacks
+
+paths:
+    # Health
+    /api/v1/health:
+        $ref: paths/api_v1_health.yaml
+
+    # Auth
+    /api/v1/iam/auth/login:
+        $ref: paths/api_v1_iam_auth_login.yaml
+    /api/v1/iam/auth/refresh-token:
+        $ref: paths/api_v1_iam_auth_refresh-token.yaml
+    /api/v1/iam/auth/me:
+        $ref: paths/api_v1_iam_auth_me.yaml
+    /api/v1/iam/auth/logout:
+        $ref: paths/api_v1_iam_auth_logout.yaml
+
+    # Auth OAuth2
+    /api/v1/iam/auth/oauth2/url:
+        $ref: paths/api_v1_iam_auth_oauth2_url.yaml
+    /api/v1/iam/auth/oauth2:
+        $ref: paths/api_v1_iam_auth_oauth2.yaml
+
+    # Forgot Password
+    /api/v1/iam/forgot-password/request:
+        $ref: paths/api_v1_iam_forgot-password_request.yaml
+    /api/v1/iam/forgot-password/verify:
+        $ref: paths/api_v1_iam_forgot-password_verify.yaml
+    /api/v1/iam/forgot-password/reset:
+        $ref: paths/api_v1_iam_forgot-password_reset.yaml
+
+    # Users
+    /api/v1/users:
+        $ref: paths/api_v1_users.yaml
+    /api/v1/users/{userId}:
+        $ref: paths/api_v1_users_{userId}.yaml
+    /api/v1/users/{userId}/password:
+        $ref: paths/api_v1_users_{userId}_password.yaml
+
+    # Users Import
+    /api/v1/users/import/excel-template:
+        $ref: paths/api_v1_users_import_excel-template.yaml
+    /api/v1/users/import/excel:
+        $ref: paths/api_v1_users_import_excel.yaml
+    /api/v1/users/import/excel-multi-sheet:
+        $ref: paths/api_v1_users_import_excel-multi-sheet.yaml
+    /api/v1/users/import/csv-template:
+        $ref: paths/api_v1_users_import_csv-template.yaml
+    /api/v1/users/import/csv:
+        $ref: paths/api_v1_users_import_csv.yaml
+
+    # Users Export
+    /api/v1/users/export/excel:
+        $ref: paths/api_v1_users_export_excel.yaml
+    /api/v1/users/export/excel-multi-sheet:
+        $ref: paths/api_v1_users_export_excel-multi-sheet.yaml
+    /api/v1/users/export/csv:
+        $ref: paths/api_v1_users_export_csv.yaml
+    /api/v1/users/export/pdf:
+        $ref: paths/api_v1_users_export_pdf.yaml
+
+    # Roles
+    /api/v1/roles:
+        $ref: paths/api_v1_roles.yaml
+    /api/v1/roles/{roleId}:
+        $ref: paths/api_v1_roles_{roleId}.yaml
+    /api/v1/roles/{roleId}/permissions:
+        $ref: paths/api_v1_roles_{roleId}_permissions.yaml
+    /api/v1/roles/export/pdf:
+        $ref: paths/api_v1_roles_export_pdf.yaml
+
+    # Permissions
+    /api/v1/permissions:
+        $ref: paths/api_v1_permissions.yaml
+    /api/v1/permissions/{permissionId}:
+        $ref: paths/api_v1_permissions_{permissionId}.yaml
+    /api/v1/permissions/export/pdf:
+        $ref: paths/api_v1_permissions_export_pdf.yaml
+
+    # Resources
+    /api/v1/resources:
+        $ref: paths/api_v1_resources.yaml
+    /api/v1/resources/{id}:
+        $ref: paths/api_v1_resources_{id}.yaml
+
+    # Operations
+    /api/v1/operations:
+        $ref: paths/api_v1_operations.yaml
+    /api/v1/operations/{id}:
+        $ref: paths/api_v1_operations_{id}.yaml
+
+    # Platforms
+    /api/v1/platforms:
+        $ref: paths/api_v1_platforms.yaml
+    /api/v1/platforms/{id}:
+        $ref: paths/api_v1_platforms_{id}.yaml
+
+    # Projects
+    /api/v1/projects:
+        $ref: paths/api_v1_projects.yaml
+    /api/v1/projects/{id}:
+        $ref: paths/api_v1_projects_{id}.yaml
+    /api/v1/projects/{projectId}/keys:
+        $ref: paths/api_v1_projects_{projectId}_keys.yaml
+    /api/v1/projects/{projectId}/slack-channels:
+        $ref: paths/api_v1_projects_{projectId}_slack-channels.yaml
+    /api/v1/projects/{projectId}/settings:
+        $ref: paths/api_v1_projects_{projectId}_settings.yaml
+
+    # Storage Files
+    /api/v1/storage-file/upload:
+        $ref: paths/api_v1_storage-file_upload.yaml
+    /api/v1/storage-file/{id}:
+        $ref: paths/api_v1_storage-file_{id}.yaml
+
+    # Query Transactions
+    /api/v1/query-transactions:
+        $ref: paths/api_v1_query-transactions.yaml
+
+    # Query Transaction Events
+    /api/v1/query-transaction-events:
+        $ref: paths/api_v1_query-transaction-events.yaml
+    /api/v1/query-transaction-events/capture:
+        $ref: paths/api_v1_query-transaction-events_capture.yaml
+    /api/v1/query-transaction-events/notify:
+        $ref: paths/api_v1_query-transaction-events_notify.yaml
+
+    # Slack
+    /api/v1/slack/command/{slashCommand}:
+        $ref: paths/api_v1_slack_command_{slashCommand}.yaml
+    /api/v1/slack/interaction:
+        $ref: paths/api_v1_slack_interaction.yaml
+
+    # N8N Callbacks
+    /api/v1/n8n/callback/ai-analyze-query-transaction-event:
+        $ref: >-
+            paths/api_v1_n8n_callback_ai-analyze-query-transaction-event.yaml
+
+components:
+    securitySchemes:
+        AccessToken:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: JWT access token
+        RefreshToken:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: JWT refresh token
+        ProjectApiKey:
+            type: apiKey
+            in: header
+            name: X-API-Key
+            description: Project API key for SDK integration

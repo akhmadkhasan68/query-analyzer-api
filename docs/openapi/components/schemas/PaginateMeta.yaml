@@ -1,0 +1,19 @@
+type: object
+required:
+    - page
+    - per_page
+    - total
+    - total_page
+properties:
+    page:
+        type: integer
+        example: 1
+    per_page:
+        type: integer
+        example: 10
+    total:
+        type: integer
+        example: 100
+    total_page:
+        type: integer
+        example: 10

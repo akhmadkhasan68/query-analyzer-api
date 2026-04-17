@@ -1,0 +1,186 @@
+get:
+    tags:
+        - Users
+    summary: Get user by ID
+    operationId: userGetById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    responses:
+        '200':
+            description: User details
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/UserV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+patch:
+    tags:
+        - Users
+    summary: Update user by ID
+    operationId: userUpdateById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - fullname
+                        - email
+                        - phone_number
+                    properties:
+                        fullname:
+                            type: string
+                            minLength: 1
+                            example: John Updated
+                        email:
+                            type: string
+                            format: email
+                            example: john.updated@example.com
+                        phone_number:
+                            type: string
+                            example: '628123456789'
+                        role_ids:
+                            type: array
+                            minItems: 1
+                            items:
+                                type: string
+                                format: uuid
+    responses:
+        '200':
+            description: User updated
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/UserV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+delete:
+    tags:
+        - Users
+    summary: Delete user by ID
+    operationId: userDeleteById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    responses:
+        '200':
+            description: User deleted
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

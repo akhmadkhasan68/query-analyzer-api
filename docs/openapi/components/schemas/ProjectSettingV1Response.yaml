@@ -1,0 +1,26 @@
+type: object
+required:
+    - id
+    - project
+    - key
+    - values
+properties:
+    id:
+        type: string
+        format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    project:
+        $ref: ./ProjectV1Response.yaml
+    key:
+        type: string
+        enum:
+            - severity
+        example: severity
+    values:
+        type: object
+        description: JSON object containing setting values
+        example:
+            low: 100
+            medium: 500
+            high: 1000
+            critical: 5000

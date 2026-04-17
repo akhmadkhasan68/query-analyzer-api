@@ -1,0 +1,49 @@
+get:
+    tags:
+        - Query Transaction Events
+    summary: List query transaction events (paginated)
+    operationId: queryTransactionEventList
+    security:
+        - AccessToken: []
+    parameters:
+        - $ref: ../components/parameters/PaginatePage.yaml
+        - $ref: ../components/parameters/PaginatePerPage.yaml
+        - $ref: ../components/parameters/PaginateSort.yaml
+        - $ref: ../components/parameters/PaginateOrder.yaml
+        - $ref: ../components/parameters/PaginateSearch.yaml
+        - name: severity
+          in: query
+          required: false
+          schema:
+              type: string
+              enum:
+                  - low
+                  - medium
+                  - high
+                  - critical
+          description: Filter by severity level
+    responses:
+        '200':
+            description: Paginated query transaction events list
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/QueryTransactionEventPaginatedResponse.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

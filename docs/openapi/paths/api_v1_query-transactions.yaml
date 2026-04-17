@@ -1,0 +1,92 @@
+post:
+    tags:
+        - Query Transactions
+    summary: Create a query transaction
+    operationId: queryTransactionCreate
+    security:
+        - AccessToken: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - project_id
+                        - raw_query
+                        - parameters
+                        - signature
+                        - total_execution_time
+                        - average_execution_time
+                        - max_execution_time
+                        - min_execution_time
+                        - environment
+                    properties:
+                        project_id:
+                            type: string
+                            format: uuid
+                            example: 550e8400-e29b-41d4-a716-446655440000
+                        raw_query:
+                            type: string
+                            example: SELECT * FROM users WHERE email = $1
+                        parameters:
+                            type: object
+                            additionalProperties: true
+                            example:
+                                $1: john@example.com
+                        signature:
+                            type: string
+                            minLength: 1
+                            maxLength: 2048
+                            example: SELECT * FROM users WHERE email = ?
+                        total_execution_time:
+                            type: number
+                            minimum: 0
+                            example: 12500.5
+                        average_execution_time:
+                            type: number
+                            minimum: 0
+                            example: 297.63
+                        max_execution_time:
+                            type: number
+                            minimum: 0
+                            example: 1500.0
+                        min_execution_time:
+                            type: number
+                            minimum: 0
+                            example: 50.2
+                        environment:
+                            type: string
+                            minLength: 1
+                            maxLength: 100
+                            example: production
+    responses:
+        '201':
+            description: Query transaction created
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/QueryTransactionV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

@@ -1,0 +1,53 @@
+post:
+    tags:
+        - Auth
+    summary: Login with email and password
+    operationId: iamAuthLogin
+    security: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - email
+                        - password
+                    properties:
+                        email:
+                            type: string
+                            format: email
+                            example: admin@example.com
+                        password:
+                            type: string
+                            example: SecurePass123
+    responses:
+        '200':
+            description: Login successful
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/IamAuthV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

@@ -1,0 +1,223 @@
+get:
+    tags:
+        - Projects
+    summary: List projects (paginated)
+    operationId: projectList
+    security:
+        - AccessToken: []
+    parameters:
+        - $ref: ../components/parameters/PaginatePage.yaml
+        - $ref: ../components/parameters/PaginatePerPage.yaml
+        - $ref: ../components/parameters/PaginateSort.yaml
+        - $ref: ../components/parameters/PaginateOrder.yaml
+        - $ref: ../components/parameters/PaginateSearch.yaml
+        - name: status
+          in: query
+          required: false
+          schema:
+              type: string
+              enum:
+                  - active
+                  - inactive
+                  - archived
+          description: Filter by project status
+    responses:
+        '200':
+            description: Paginated projects list
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ProjectPaginatedResponse.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+post:
+    tags:
+        - Projects
+    summary: Create a project
+    operationId: projectCreate
+    security:
+        - AccessToken: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - name
+                        - platform_id
+                    properties:
+                        name:
+                            type: string
+                            minLength: 2
+                            maxLength: 100
+                            example: My Project
+                        description:
+                            type: string
+                            maxLength: 500
+                            nullable: true
+                            example: A sample project
+                        status:
+                            type: string
+                            enum:
+                                - active
+                                - inactive
+                                - archived
+                            default: active
+                        platform_id:
+                            type: string
+                            format: uuid
+                            example: 550e8400-e29b-41d4-a716-446655440000
+                        gitlab:
+                            type: object
+                            properties:
+                                project_id:
+                                    type: integer
+                                    example: 12345
+                                url:
+                                    type: string
+                                    format: uri
+                                    example: https://gitlab.com/org/project
+                                group_id:
+                                    type: integer
+                                    example: 100
+                                group_name:
+                                    type: string
+                                    example: my-org
+                                default_branch:
+                                    type: string
+                                    example: main
+                                visibility:
+                                    type: string
+                                    example: private
+                        slack_channel:
+                            type: object
+                            properties:
+                                slack_channel_id:
+                                    type: string
+                                    example: C01234ABCDE
+    responses:
+        '201':
+            description: Project created
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/ProjectV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '409':
+            description: Conflict
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorConflictResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
+delete:
+    tags:
+        - Projects
+    summary: Delete projects by IDs
+    operationId: projectDeleteByIds
+    security:
+        - AccessToken: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - ids
+                    properties:
+                        ids:
+                            type: array
+                            items:
+                                type: string
+                                format: uuid
+                            example:
+                                - 550e8400-e29b-41d4-a716-446655440000
+    responses:
+        '200':
+            description: Projects deleted
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

@@ -1,0 +1,57 @@
+type: object
+required:
+    - id
+    - project
+    - query_id
+    - raw_query
+    - execution_time_ms
+    - timestamp
+    - received_at
+    - environment
+    - severity
+properties:
+    id:
+        type: string
+        format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    project:
+        $ref: ./ProjectV1Response.yaml
+    query_id:
+        type: string
+        format: uuid
+        example: 660e8400-e29b-41d4-a716-446655440001
+    raw_query:
+        type: string
+        example: 'SELECT * FROM users WHERE email = ?'
+    execution_time_ms:
+        type: number
+        example: 1250.5
+    timestamp:
+        type: string
+        format: date-time
+        example: '2026-01-01T10:00:00+07:00'
+    received_at:
+        type: string
+        format: date-time
+        example: '2026-01-01T10:00:01+07:00'
+    environment:
+        type: string
+        example: production
+    severity:
+        type: string
+        enum:
+            - low
+            - medium
+            - high
+            - critical
+        example: high
+    created_at:
+        type: string
+        format: date-time
+        nullable: true
+        example: '2026-01-01T10:00:01+07:00'
+    updated_at:
+        type: string
+        format: date-time
+        nullable: true
+        example: '2026-01-01T10:00:01+07:00'

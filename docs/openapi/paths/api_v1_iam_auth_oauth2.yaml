@@ -1,0 +1,43 @@
+post:
+    tags:
+        - Auth OAuth2
+    summary: Login with OAuth2 authorization code
+    operationId: iamAuthOauth2Login
+    security: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - code
+                    properties:
+                        code:
+                            type: string
+                            description: OAuth2 authorization code
+                            example: 4/0AX4XfWi...
+    responses:
+        '200':
+            description: OAuth2 login successful
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/IamAuthV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

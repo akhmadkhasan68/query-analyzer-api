@@ -1,0 +1,50 @@
+get:
+    tags:
+        - Permissions
+    summary: Get permission by ID
+    operationId: permissionGetById
+    security:
+        - AccessToken: []
+    parameters:
+        - name: permissionId
+          in: path
+          required: true
+          schema:
+              type: string
+              format: uuid
+    responses:
+        '200':
+            description: Permission details
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/PermissionV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: Not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

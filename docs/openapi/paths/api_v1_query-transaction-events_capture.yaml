@@ -1,0 +1,117 @@
+post:
+    tags:
+        - Query Transaction Events
+    summary: Capture a query transaction event
+    operationId: queryTransactionEventCapture
+    description: Captures a slow query event from the application SDK. Authenticated via Project API Key header.
+    security:
+        - ProjectApiKey: []
+    requestBody:
+        required: true
+        content:
+            application/json:
+                schema:
+                    type: object
+                    required:
+                        - query_id
+                        - raw_query
+                        - execution_time_ms
+                        - timestamp
+                        - context_type
+                        - environment
+                    properties:
+                        query_id:
+                            type: string
+                            format: uuid
+                            example: 660e8400-e29b-41d4-a716-446655440001
+                        raw_query:
+                            type: string
+                            example: SELECT * FROM users WHERE email = $1
+                        parameters:
+                            type: object
+                            additionalProperties: true
+                            nullable: true
+                            example:
+                                $1: john@example.com
+                        execution_time_ms:
+                            type: number
+                            example: 1250.5
+                        stack_trace:
+                            type: array
+                            nullable: true
+                            items:
+                                type: string
+                            example:
+                                - at UserRepository.findByEmail (user.repository.ts:42)
+                        timestamp:
+                            type: string
+                            format: date-time
+                            example: '2026-01-01T10:00:00+07:00'
+                        context_type:
+                            type: string
+                            example: http-request
+                        environment:
+                            type: string
+                            example: production
+                        application_name:
+                            type: string
+                            nullable: true
+                            example: my-api
+                        version:
+                            type: string
+                            nullable: true
+                            example: 1.0.0
+                        execution_plan:
+                            type: object
+                            nullable: true
+                            properties:
+                                database_provider:
+                                    type: string
+                                    example: postgresql
+                                plan_format:
+                                    type: object
+                                    properties:
+                                        content_type:
+                                            type: string
+                                            example: application/json
+                                        file_extension:
+                                            type: string
+                                            example: json
+                                        description:
+                                            type: string
+                                            example: PostgreSQL EXPLAIN ANALYZE output
+                                content:
+                                    type: string
+                                    example: '{"Plan": {"Node Type": "Seq Scan"}}'
+    responses:
+        '201':
+            description: Event captured
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      nullable: true
+                                      example: null
+        '401':
+            description: Unauthorized - Invalid API key
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '422':
+            description: Validation error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorValidationResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

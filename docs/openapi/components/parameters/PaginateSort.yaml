@@ -1,0 +1,7 @@
+name: sort
+in: query
+required: false
+schema:
+    type: string
+    default: updated_at
+description: Field name for sorting

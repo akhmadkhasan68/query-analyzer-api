@@ -1,0 +1,32 @@
+type: object
+required:
+    - id
+    - gitlab_project_id
+    - gitlab_url
+    - gitlab_group_id
+    - gitlab_group_name
+    - gitlab_default_branch
+    - gitlab_visibility
+properties:
+    id:
+        type: string
+        format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    gitlab_project_id:
+        type: integer
+        example: 12345
+    gitlab_url:
+        type: string
+        example: https://gitlab.com/org/project
+    gitlab_group_id:
+        type: integer
+        example: 100
+    gitlab_group_name:
+        type: string
+        example: my-org
+    gitlab_default_branch:
+        type: string
+        example: main
+    gitlab_visibility:
+        type: string
+        example: private
