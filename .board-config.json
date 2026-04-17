@@ -1,0 +1,8 @@
+{
+    "board_labels": [
+        "To Do",
+        "In Progress",
+        "Ready to Review"
+    ],
+    "issue_board_url": "https://gitlab.dot.co.id/groups/playground/orm-query-analyzer/-/boards"
+}
