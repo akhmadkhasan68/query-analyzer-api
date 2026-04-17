@@ -1,0 +1,35 @@
+type: object
+properties:
+    id:
+        type: integer
+        example: 706
+    name:
+        type: string
+        example: queryanalyzerapi
+    name_with_namespace:
+        type: string
+        example: playground / orm-query-analyzer / queryanalyzerapi
+    path:
+        type: string
+        example: queryanalyzerapi
+    path_with_namespace:
+        type: string
+        example: playground/orm-query-analyzer/queryanalyzerapi
+    description:
+        type: string
+        nullable: true
+        example: ORM Query Analyzer API
+    web_url:
+        type: string
+        example: https://gitlab.dot.co.id/playground/orm-query-analyzer/queryanalyzerapi
+    default_branch:
+        type: string
+        example: main
+    created_at:
+        type: string
+        format: date-time
+        example: '2025-01-01T10:00:00+07:00'
+    last_activity_at:
+        type: string
+        format: date-time
+        example: '2026-04-17T10:00:00+07:00'

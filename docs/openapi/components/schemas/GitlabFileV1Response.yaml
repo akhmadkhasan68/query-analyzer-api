@@ -1,0 +1,24 @@
+type: object
+properties:
+    file_name:
+        type: string
+        example: package.json
+    file_path:
+        type: string
+        example: package.json
+    size:
+        type: integer
+        example: 2048
+    encoding:
+        type: string
+        example: base64
+    content_sha256:
+        type: string
+        example: abc123def456
+    ref:
+        type: string
+        example: main
+    content:
+        type: string
+        description: File content (base64 encoded or raw depending on GitLab API)
+        example: eyJuYW1lIjoicXVlcnlhbmFseXplcmFwaSJ9

@@ -16,6 +16,7 @@ import { IamModule } from './modules/iam/iam.module';
 import { JwtAuthGuard } from './modules/iam/shared/guards/jwt-auth.guard';
 import { PermissionGuard } from './modules/iam/shared/guards/permission.guard';
 import { LogActivityModule } from './modules/log-activity/log-activity.module';
+import { GitlabModule } from './modules/gitlab/gitlab.module';
 import { N8nModule } from './modules/n8n/n8n.module';
 import { OperationModule } from './modules/operation/operation.module';
 import { PermissionModule } from './modules/permission/permission.module';
@@ -96,6 +97,7 @@ import { DateTimeUtil } from './shared/utils/datetime.util';
         QueryTransactionModule,
         SlackModule,
         N8nModule,
+        GitlabModule,
     ],
     providers: [
         {

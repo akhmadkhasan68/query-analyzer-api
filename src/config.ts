@@ -105,6 +105,11 @@ export const config = {
             process.env.SLACK_WEBHOOK_BASE_URL || 'https://hooks.slack.com',
         botOAuthToken: process.env.SLACK_BOT_OAUTH_TOKEN || '',
     },
+    gitlab: {
+        apiBaseUrl:
+            process.env.GITLAB_API_BASE_URL || 'https://gitlab.com/api/v4',
+        apiToken: process.env.GITLAB_API_TOKEN || '',
+    },
     n8n: {
         baseUrl: process.env.N8N_BASE_URL || 'http://localhost:5678',
         apiKey: process.env.N8N_API_KEY || '',

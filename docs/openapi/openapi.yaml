@@ -63,6 +63,8 @@ tags:
       description: Slack integration webhooks
     - name: N8N Callbacks
       description: N8N workflow callbacks
+    - name: Gitlab
+      description: GitLab API integration (list projects, read files)
 
 paths:
     # Health
@@ -199,6 +201,14 @@ paths:
     /api/v1/n8n/callback/ai-analyze-query-transaction-event:
         $ref: >-
             paths/api_v1_n8n_callback_ai-analyze-query-transaction-event.yaml
+
+    # Gitlab
+    /api/v1/gitlab/health:
+        $ref: paths/api_v1_gitlab_health.yaml
+    /api/v1/gitlab/projects:
+        $ref: paths/api_v1_gitlab_projects.yaml
+    /api/v1/gitlab/projects/{projectId}/files:
+        $ref: paths/api_v1_gitlab_projects_{projectId}_files.yaml
 
 components:
     securitySchemes:

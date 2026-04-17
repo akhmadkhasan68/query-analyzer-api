@@ -58,6 +58,8 @@ tags:
     description: Slack integration webhooks
   - name: N8N Callbacks
     description: N8N workflow callbacks
+  - name: Gitlab
+    description: GitLab API integration (list projects, read files)
 paths:
   /api/v1/health:
     get:
@@ -3828,6 +3830,151 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/gitlab/health:
+    get:
+      tags:
+        - Gitlab
+      summary: GitLab integration health check
+      operationId: gitlabHealthCheck
+      security:
+        - AccessToken: []
+      responses:
+        '200':
+          description: GitLab integration is healthy
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            example: connected
+                          host:
+                            type: string
+                            example: https://gitlab.dot.co.id
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '500':
+          description: Internal server error (GitLab unreachable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/gitlab/projects:
+    get:
+      tags:
+        - Gitlab
+      summary: List GitLab projects (paginated)
+      operationId: gitlabProjectList
+      security:
+        - AccessToken: []
+      parameters:
+        - $ref: '#/components/parameters/PaginatePage'
+        - $ref: '#/components/parameters/PaginatePerPage'
+        - $ref: '#/components/parameters/PaginateSort'
+        - $ref: '#/components/parameters/PaginateOrder'
+        - $ref: '#/components/parameters/PaginateSearch'
+      responses:
+        '200':
+          description: Paginated GitLab projects list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitlabProjectPaginatedResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
+  /api/v1/gitlab/projects/{projectId}/files:
+    get:
+      tags:
+        - Gitlab
+      summary: Read a file from a GitLab project
+      operationId: gitlabProjectGetFile
+      security:
+        - AccessToken: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: GitLab project ID
+          example: 706
+        - name: file_path
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Path to the file in the repository
+          example: src/main.ts
+        - name: ref
+          in: query
+          required: false
+          schema:
+            type: string
+            default: main
+          description: Branch name, tag, or commit SHA
+          example: main
+      responses:
+        '200':
+          description: File content retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/GitlabFileV1Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorizedResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbiddenResponse'
+        '404':
+          description: File or project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFoundResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternalServerResponse'
 components:
   securitySchemes:
     AccessToken:
@@ -4590,6 +4737,81 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/QueryTransactionEventV1Response'
+    GitlabProjectV1Response:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 706
+        name:
+          type: string
+          example: queryanalyzerapi
+        name_with_namespace:
+          type: string
+          example: playground / orm-query-analyzer / queryanalyzerapi
+        path:
+          type: string
+          example: queryanalyzerapi
+        path_with_namespace:
+          type: string
+          example: playground/orm-query-analyzer/queryanalyzerapi
+        description:
+          type: string
+          nullable: true
+          example: ORM Query Analyzer API
+        web_url:
+          type: string
+          example: https://gitlab.dot.co.id/playground/orm-query-analyzer/queryanalyzerapi
+        default_branch:
+          type: string
+          example: main
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-01T10:00:00+07:00'
+        last_activity_at:
+          type: string
+          format: date-time
+          example: '2026-04-17T10:00:00+07:00'
+    GitlabProjectPaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                meta:
+                  $ref: '#/components/schemas/PaginateMeta'
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/GitlabProjectV1Response'
+    GitlabFileV1Response:
+      type: object
+      properties:
+        file_name:
+          type: string
+          example: package.json
+        file_path:
+          type: string
+          example: package.json
+        size:
+          type: integer
+          example: 2048
+        encoding:
+          type: string
+          example: base64
+        content_sha256:
+          type: string
+          example: abc123def456
+        ref:
+          type: string
+          example: main
+        content:
+          type: string
+          description: File content (base64 encoded or raw depending on GitLab API)
+          example: eyJuYW1lIjoicXVlcnlhbmFseXplcmFwaSJ9
   parameters:
     PaginatePage:
       name: page

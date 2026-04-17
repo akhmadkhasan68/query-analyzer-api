@@ -1,0 +1,66 @@
+get:
+    tags:
+        - Gitlab
+    summary: Read a file from a GitLab project
+    operationId: gitlabProjectGetFile
+    security:
+        - AccessToken: []
+    parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+              type: integer
+          description: GitLab project ID
+          example: 706
+        - name: file_path
+          in: query
+          required: true
+          schema:
+              type: string
+          description: Path to the file in the repository
+          example: src/main.ts
+        - name: ref
+          in: query
+          required: false
+          schema:
+              type: string
+              default: main
+          description: Branch name, tag, or commit SHA
+          example: main
+    responses:
+        '200':
+            description: File content retrieved
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      $ref: ../components/schemas/GitlabFileV1Response.yaml
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '403':
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorForbiddenResponse.yaml
+        '404':
+            description: File or project not found
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorNotFoundResponse.yaml
+        '500':
+            description: Internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml

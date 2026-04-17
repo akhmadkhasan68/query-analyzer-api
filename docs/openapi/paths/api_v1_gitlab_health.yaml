@@ -1,0 +1,38 @@
+get:
+    tags:
+        - Gitlab
+    summary: GitLab integration health check
+    operationId: gitlabHealthCheck
+    security:
+        - AccessToken: []
+    responses:
+        '200':
+            description: GitLab integration is healthy
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: ../components/schemas/BaseResponse.yaml
+                            - type: object
+                              properties:
+                                  data:
+                                      type: object
+                                      properties:
+                                          status:
+                                              type: string
+                                              example: connected
+                                          host:
+                                              type: string
+                                              example: https://gitlab.dot.co.id
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorUnauthorizedResponse.yaml
+        '500':
+            description: Internal server error (GitLab unreachable)
+            content:
+                application/json:
+                    schema:
+                        $ref: ../components/schemas/ErrorInternalServerResponse.yaml
